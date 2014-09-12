@@ -1,13 +1,13 @@
-#include "ui/MainWindow.h"
+#include "ui/Launcher.h"
 
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
-	QApplication application(argc, argv);
+    QApplication app(argc, argv);
 
-	MainWindow *main_window = new MainWindow;
-	main_window->show();
+    Launcher *launcher = new Launcher;
+    launcher->show();
 
-	return application.exec();
+    return app.exec();
 }
