@@ -102,6 +102,60 @@ QPushButton#push_button_close:pressed {
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="push_button_minimize">
+    <property name="geometry">
+     <rect>
+      <x>1113</x>
+      <y>6</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>30</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>30</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Comic Sans MS</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#push_button_minimize {
+    border: none;
+    background-image: url(:/JPEG/assets/MINIMIZE_NORMAL.jpg);
+    background-repeat: none;
+}
+
+QPushButton#push_button_minimize:hover {
+    background-image: url(:/JPEG/assets/MINIMIZE_ROLLOVER.jpg);
+}
+
+QPushButton#push_button_minimize:pressed {
+    background-image: url(:/JPEG/assets/MINIMIZE_DOWN.jpg);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

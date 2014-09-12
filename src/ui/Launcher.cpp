@@ -47,3 +47,8 @@ void Launcher::on_push_button_close_clicked()
 {
     this->close();
 }
+
+void Launcher::on_push_button_minimize_clicked()
+{
+    this->setWindowState(Qt::WindowMinimized);
+}

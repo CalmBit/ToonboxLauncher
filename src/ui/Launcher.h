@@ -23,6 +23,8 @@ class Launcher : public QMainWindow
 private slots:
         void on_push_button_close_clicked();
 
+        void on_push_button_minimize_clicked();
+
 private:
         Ui::Launcher *ui;
 
