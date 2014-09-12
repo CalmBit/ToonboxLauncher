@@ -47,7 +47,62 @@
    <string notr="true">background-image: url(:/JPEG/assets/BACKGROUND.jpg);
 border-radius: 25px;</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QPushButton" name="push_button_close">
+    <property name="geometry">
+     <rect>
+      <x>1156</x>
+      <y>6</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>30</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>30</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Comic Sans MS</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#push_button_close {
+    border: none;
+    background-image: url(:/JPEG/assets/CLOSE_NORMAL.jpg);
+    background-repeat: none;
+}
+
+QPushButton#push_button_close:hover {
+    background-image: url(:/JPEG/assets/CLOSE_ROLLOVER.jpg);
+}
+
+QPushButton#push_button_close:pressed {
+    background-image: url(:/JPEG/assets/CLOSE_DOWN.jpg);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

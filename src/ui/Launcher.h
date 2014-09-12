@@ -20,7 +20,10 @@ class Launcher : public QMainWindow
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
 
-    private:
+private slots:
+        void on_push_button_close_clicked();
+
+private:
         Ui::Launcher *ui;
 
         bool m_captured;

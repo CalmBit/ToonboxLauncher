@@ -42,3 +42,8 @@ void Launcher::mouseReleaseEvent(QMouseEvent *event)
         m_captured = false;
     }
 }
+
+void Launcher::on_push_button_close_clicked()
+{
+    this->close();
+}
