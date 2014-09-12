@@ -4,12 +4,14 @@
 #include "core/constants.h"
 
 #include <QMainWindow>
+#include <QPoint>
 #include <QMouseEvent>
 #include <QString>
 #include <QUrl>
 #include <QDesktopServices>
 
-Launcher::Launcher(QWidget *parent) : QMainWindow(parent), ui(new Ui::Launcher)
+Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
+    ui(new Ui::Launcher), m_captured(false), m_last_pos(QPoint(0, 0))
 {
     ui->setupUi(this);
 
