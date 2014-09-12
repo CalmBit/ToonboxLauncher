@@ -211,6 +211,58 @@ QPushButton#push_button_minimize:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QLineEdit" name="line_edit_password">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>522</y>
+      <width>195</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>195</width>
+      <height>15</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>195</width>
+      <height>15</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Microsoft Sans Serif</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLineEdit#line_edit_password {
+    border: none;
+    background: none;
+    background-color: rgb(187, 204, 230);
+}</string>
+    </property>
+    <property name="maxLength">
+     <number>59</number>
+    </property>
+    <property name="echoMode">
+     <enum>QLineEdit::Password</enum>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
