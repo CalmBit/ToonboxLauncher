@@ -11,6 +11,9 @@ Launcher::Launcher(QWidget *parent) : QMainWindow(parent), ui(new Ui::Launcher)
     // Window properties:
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
+
+    // Put focus on the username line edit:
+    ui->line_edit_username->setFocus();
 }
 
 Launcher::~Launcher()
