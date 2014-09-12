@@ -6,6 +6,9 @@
 Launcher::Launcher(QWidget *parent) : QMainWindow(parent), ui(new Ui::Launcher)
 {
     ui->setupUi(this);
+
+    // Window properties:
+    this->setWindowFlags(Qt::FramelessWindowHint);
 }
 
 Launcher::~Launcher()
