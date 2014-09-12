@@ -1,8 +1,13 @@
 #include "Launcher.h"
 #include "ui_Launcher.h"
 
+#include "core/constants.h"
+
 #include <QMainWindow>
 #include <QMouseEvent>
+#include <QString>
+#include <QUrl>
+#include <QDesktopServices>
 
 Launcher::Launcher(QWidget *parent) : QMainWindow(parent), ui(new Ui::Launcher)
 {
@@ -78,4 +83,16 @@ void Launcher::on_line_edit_password_returnPressed()
     {
         // TODO: Start the login thread.
     }
+}
+
+void Launcher::on_push_button_home_page_clicked()
+{
+    QString url(HOME_PAGE_URL.c_str());
+    QDesktopServices::openUrl(QUrl(url));
+}
+
+void Launcher::on_push_button_report_a_bug_clicked()
+{
+    QString url(REPORT_A_BUG_URL.c_str());
+    QDesktopServices::openUrl(QUrl(url));
 }

@@ -29,6 +29,10 @@ private slots:
 
         void on_line_edit_password_returnPressed();
 
+        void on_push_button_home_page_clicked();
+
+        void on_push_button_report_a_bug_clicked();
+
 private:
         Ui::Launcher *ui;
 

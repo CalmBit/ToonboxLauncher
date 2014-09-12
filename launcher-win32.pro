@@ -8,7 +8,8 @@ SOURCES += \
     src/ui/Launcher.cpp
 
 HEADERS += \
-    src/ui/Launcher.h
+    src/ui/Launcher.h \
+    src/core/constants.h
 
 FORMS += Launcher.ui
 
