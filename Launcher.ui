@@ -1,24 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Launcher</class>
- <widget class="QMainWindow" name="Launcher" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="Launcher">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>1200</width>
+    <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Launcher</string>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="minimumSize">
+   <size>
+    <width>1200</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1200</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Comic Sans MS</family>
+    <pointsize>10</pointsize>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Toontown Infinite</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="app.qrc">
+    <normaloff>:/ICON/assets/ICON.ico</normaloff>:/ICON/assets/ICON.ico</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">Launcher {
+    background-image: url(:/JPEG/assets/BACKGROUND.jpg);
+    border-radius: 25px;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
- <resources/>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="app.qrc"/>
+ </resources>
  <connections/>
 </ui>
