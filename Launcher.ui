@@ -263,6 +263,114 @@ QPushButton#push_button_minimize:pressed {
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="push_button_report_a_bug">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>525</y>
+      <width>125</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>125</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>125</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Comic Sans MS</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#push_button_report_a_bug {
+    border: none;
+    background-image: url(:/JPEG/assets/REPORT_A_BUG_NORMAL.jpg);
+    background-repeat: none;
+}
+
+QPushButton#push_button_report_a_bug:hover {
+    background-image: url(:/JPEG/assets/REPORT_A_BUG_ROLLOVER.jpg);
+}
+
+QPushButton#push_button_report_a_bug:pressed {
+    background-image: url(:/JPEG/assets/REPORT_A_BUG_DOWN.jpg);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="push_button_home_page">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>570</y>
+      <width>125</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>125</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>125</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Comic Sans MS</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#push_button_home_page {
+    border: none;
+    background-image: url(:/JPEG/assets/HOME_PAGE_NORMAL.jpg);
+    background-repeat: none;
+}
+
+QPushButton#push_button_home_page:hover {
+    background-image: url(:/JPEG/assets/HOME_PAGE_ROLLOVER.jpg);
+}
+
+QPushButton#push_button_home_page:pressed {
+    background-image: url(:/JPEG/assets/HOME_PAGE_DOWN.jpg);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
