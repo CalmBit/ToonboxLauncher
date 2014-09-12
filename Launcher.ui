@@ -371,6 +371,60 @@ QPushButton#push_button_home_page:pressed {
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="push_button_play">
+    <property name="geometry">
+     <rect>
+      <x>605</x>
+      <y>460</y>
+      <width>72</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>72</width>
+      <height>70</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>72</width>
+      <height>70</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Comic Sans MS</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#push_button_play {
+    border: none;
+    background-image: url(:/JPEG/assets/PLAY_NORMAL.jpg);
+    background-repeat: none;
+}
+
+QPushButton#push_button_play:hover {
+    background-image: url(:/JPEG/assets/PLAY_ROLLOVER.jpg);
+}
+
+QPushButton#push_button_play:pressed {
+    background-image: url(:/JPEG/assets/PLAY_DOWN.jpg);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
