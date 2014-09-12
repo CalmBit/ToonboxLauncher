@@ -44,10 +44,8 @@
     <normaloff>:/ICON/assets/ICON.ico</normaloff>:/ICON/assets/ICON.ico</iconset>
   </property>
   <property name="styleSheet">
-   <string notr="true">Launcher {
-    background-image: url(:/JPEG/assets/BACKGROUND.jpg);
-    border-radius: 25px;
-}</string>
+   <string notr="true">background-image: url(:/JPEG/assets/BACKGROUND.jpg);
+border-radius: 25px;</string>
   </property>
   <widget class="QWidget" name="centralWidget"/>
  </widget>

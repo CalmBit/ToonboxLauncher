@@ -9,6 +9,7 @@ Launcher::Launcher(QWidget *parent) : QMainWindow(parent), ui(new Ui::Launcher)
 
     // Window properties:
     this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_TranslucentBackground);
 }
 
 Launcher::~Launcher()
