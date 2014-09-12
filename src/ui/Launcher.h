@@ -25,6 +25,10 @@ private slots:
 
         void on_push_button_minimize_clicked();
 
+        void on_line_edit_username_returnPressed();
+
+        void on_line_edit_password_returnPressed();
+
 private:
         Ui::Launcher *ui;
 

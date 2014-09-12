@@ -55,3 +55,27 @@ void Launcher::on_push_button_minimize_clicked()
 {
     this->setWindowState(Qt::WindowMinimized);
 }
+
+void Launcher::on_line_edit_username_returnPressed()
+{
+    if(ui->line_edit_username->text().length() > 0)
+    {
+        ui->line_edit_password->setFocus();
+    }
+}
+
+void Launcher::on_line_edit_password_returnPressed()
+{
+    if(ui->line_edit_password->text().length() < 1)
+    {
+        return;
+    }
+    if(ui->line_edit_username->text().length() < 1)
+    {
+        ui->line_edit_username->setFocus();
+    }
+    else
+    {
+        // TODO: Start the login thread.
+    }
+}
