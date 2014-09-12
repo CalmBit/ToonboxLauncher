@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/ICON">
+        <file>assets/ICON.ico</file>
+    </qresource>
+    <qresource prefix="/JPEG">
+        <file>assets/BACKGROUND.jpg</file>
+        <file>assets/CLOSE_DOWN.jpg</file>
+        <file>assets/CLOSE_NORMAL.jpg</file>
+        <file>assets/CLOSE_ROLLOVER.jpg</file>
+        <file>assets/CONTENT_PACKS_DOWN.jpg</file>
+        <file>assets/CONTENT_PACKS_NORMAL.jpg</file>
+        <file>assets/CONTENT_PACKS_ROLLOVER.jpg</file>
+        <file>assets/HOME_PAGE_DOWN.jpg</file>
+        <file>assets/HOME_PAGE_NORMAL.jpg</file>
+        <file>assets/HOME_PAGE_ROLLOVER.jpg</file>
+        <file>assets/MINIMIZE_DOWN.jpg</file>
+        <file>assets/MINIMIZE_NORMAL.jpg</file>
+        <file>assets/MINIMIZE_ROLLOVER.jpg</file>
+        <file>assets/OPTIONS_DOWN.jpg</file>
+        <file>assets/OPTIONS_NORMAL.jpg</file>
+        <file>assets/OPTIONS_ROLLOVER.jpg</file>
+        <file>assets/PLAY_DISABLED.jpg</file>
+        <file>assets/PLAY_DOWN.jpg</file>
+        <file>assets/PLAY_NORMAL.jpg</file>
+        <file>assets/PLAY_ROLLOVER.jpg</file>
+        <file>assets/REPORT_A_BUG_DOWN.jpg</file>
+        <file>assets/REPORT_A_BUG_NORMAL.jpg</file>
+        <file>assets/REPORT_A_BUG_ROLLOVER.jpg</file>
+    </qresource>
+</RCC>

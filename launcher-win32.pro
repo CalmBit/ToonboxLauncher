@@ -11,3 +11,6 @@ HEADERS += \
     src/ui/Launcher.h
 
 FORMS += Launcher.ui
+
+RESOURCES += \
+    app.qrc
