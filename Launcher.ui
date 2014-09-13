@@ -437,6 +437,12 @@ QPushButton#push_button_play:pressed {
       <height>30</height>
      </rect>
     </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
     <property name="minimumSize">
      <size>
       <width>345</width>
@@ -461,7 +467,7 @@ QPushButton#push_button_play:pressed {
      <string notr="true">QProgressBar#progress_bar {
     border: 1px solid grey;
     background: none;
-    background-color: rgb(16, 68, 255);
+    background-color: rgb(80, 100, 255);
 }
 
 QProgressBar::chunk#progress_bar {
@@ -496,6 +502,12 @@ QProgressBar::chunk#progress_bar {
       <width>345</width>
       <height>120</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="minimumSize">
      <size>
