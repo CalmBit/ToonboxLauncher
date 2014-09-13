@@ -3,6 +3,8 @@
 
 #include "core/constants.h"
 
+#include "patcher/Patcher.h"
+
 #include <QWidget>
 #include <QMainWindow>
 #include <QPoint>
@@ -12,7 +14,8 @@
 #include <QUrl>
 
 Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
-    ui(new Ui::Launcher), m_captured(false), m_last_pos(QPoint(0, 0))
+    ui(new Ui::Launcher), patcher(new Patcher(DOWNLOAD_SERVER_URL.c_str())),
+    m_captured(false), m_last_pos(QPoint(0, 0))
 {
     ui->setupUi(this);
 

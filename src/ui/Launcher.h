@@ -1,4 +1,6 @@
 #pragma once
+#include "patcher/Patcher.h"
+
 #include <QMainWindow>
 #include <QWidget>
 #include <QMouseEvent>
@@ -32,6 +34,7 @@ class Launcher : public QMainWindow
 
     private:
         Ui::Launcher *ui;
+        Patcher *patcher;
 
         bool m_captured;
         QPoint m_last_pos;
