@@ -437,6 +437,10 @@ QPushButton#push_button_play:hover {
 
 QPushButton#push_button_play:pressed {
     background-image: url(:/JPEG/assets/PLAY_DOWN.jpg);
+}
+
+QPushButton#push_button_play:disabled {
+    background-image: url(:/JPEG/assets/PLAY_DISABLED.jpg);
 }</string>
     </property>
     <property name="text">
