@@ -86,6 +86,9 @@ border-radius: 25px;</string>
       <bold>true</bold>
      </font>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton#push_button_close {
     border: none;
@@ -139,6 +142,9 @@ QPushButton#push_button_close:pressed {
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton#push_button_minimize {
@@ -301,6 +307,9 @@ QPushButton#push_button_minimize:pressed {
       <bold>true</bold>
      </font>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton#push_button_report_a_bug {
     border: none;
@@ -355,6 +364,9 @@ QPushButton#push_button_report_a_bug:pressed {
       <bold>true</bold>
      </font>
     </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <property name="styleSheet">
      <string notr="true">QPushButton#push_button_home_page {
     border: none;
@@ -408,6 +420,9 @@ QPushButton#push_button_home_page:pressed {
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton#push_button_play {
