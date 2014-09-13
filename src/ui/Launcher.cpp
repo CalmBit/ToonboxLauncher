@@ -41,6 +41,17 @@ Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
 
         exit(1);
     }
+
+    // Update the version labels:
+    QString server_version = patcher->get_server_version();
+    if(!server_version.isEmpty())
+    {
+        ui->label_server_version->setText(server_version);
+    }
+    if(!launcher_version.isEmpty())
+    {
+        ui->label_launcher_version->setText(launcher_version);
+    }
 }
 
 Launcher::~Launcher()
