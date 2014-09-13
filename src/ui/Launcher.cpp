@@ -62,17 +62,7 @@ Launcher::~Launcher()
 
 void Launcher::launch()
 {
-    this->disable_push_button_play();
-}
-
-void Launcher::disable_push_button_play()
-{
     ui->push_button_play->setEnabled(false);
-}
-
-void Launcher::enable_push_button_play()
-{
-    ui->push_button_play->setEnabled(true);
 }
 
 void Launcher::mousePressEvent(QMouseEvent *event)

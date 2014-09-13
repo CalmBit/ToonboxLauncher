@@ -43,7 +43,4 @@ class Launcher : public QMainWindow
 
         bool m_captured;
         QPoint m_last_pos;
-
-        void disable_push_button_play();
-        void enable_push_button_play();
 };
