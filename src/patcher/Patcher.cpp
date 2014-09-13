@@ -1,15 +1,16 @@
 #include "Patcher.h"
 
+#include "core/constants.h"
+
 #include <QString>
 #include <QUrl>
 #include <QEventLoop>
 #include <QNetworkAccessManager>
-#include <QObject>
-#include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QObject>
 #include <QByteArray>
 #include <QXmlStreamReader>
-#include <QXmlStreamAttributes>
 
 Patcher::Patcher(QString url) : m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version("")
@@ -38,23 +39,17 @@ QUrl Patcher::get_url()
 
 void Patcher::update_manifest(QString distribution_token, QString filename)
 {
-    if(!m_url.toString().endsWith("/"))
-    {
-        m_url = QUrl(m_url.toString() + "/");
-    }
-    QUrl url(m_url.toString() + distribution_token + "/" + filename);
-
     QEventLoop event_loop;
-
-    // Quit the event loop when the network request is finished:
     QNetworkAccessManager network_access_manager;
-    QObject::connect(&network_access_manager, SIGNAL(finished(QNetworkReply *)),
-                     &event_loop, SLOT(quit()));
 
+    QUrl url(m_url.toString() + "/" + distribution_token + "/" + filename);
     QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
     QNetworkReply *reply = network_access_manager.get(request);
 
     // Pause execution until the network request is finished:
+    QObject::connect(&network_access_manager, SIGNAL(finished(QNetworkReply *)),
+                     &event_loop, SLOT(quit()));
     event_loop.exec();
 
     if(reply->error() == QNetworkReply::NoError)
