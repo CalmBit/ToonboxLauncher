@@ -3,12 +3,13 @@
 
 #include "core/constants.h"
 
+#include <QWidget>
 #include <QMainWindow>
 #include <QPoint>
 #include <QMouseEvent>
 #include <QString>
-#include <QUrl>
 #include <QDesktopServices>
+#include <QUrl>
 
 Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
     ui(new Ui::Launcher), m_captured(false), m_last_pos(QPoint(0, 0))
@@ -53,14 +54,26 @@ void Launcher::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+void Launcher::on_push_button_minimize_clicked()
+{
+    this->setWindowState(Qt::WindowMinimized);
+}
+
 void Launcher::on_push_button_close_clicked()
 {
     this->close();
 }
 
-void Launcher::on_push_button_minimize_clicked()
+void Launcher::on_push_button_home_page_clicked()
 {
-    this->setWindowState(Qt::WindowMinimized);
+    QString url(HOME_PAGE_URL.c_str());
+    QDesktopServices::openUrl(QUrl(url));
+}
+
+void Launcher::on_push_button_report_a_bug_clicked()
+{
+    QString url(REPORT_A_BUG_URL.c_str());
+    QDesktopServices::openUrl(QUrl(url));
 }
 
 void Launcher::on_line_edit_username_returnPressed()
@@ -85,16 +98,4 @@ void Launcher::on_line_edit_password_returnPressed()
     {
         // TODO: Start the login thread.
     }
-}
-
-void Launcher::on_push_button_home_page_clicked()
-{
-    QString url(HOME_PAGE_URL.c_str());
-    QDesktopServices::openUrl(QUrl(url));
-}
-
-void Launcher::on_push_button_report_a_bug_clicked()
-{
-    QString url(REPORT_A_BUG_URL.c_str());
-    QDesktopServices::openUrl(QUrl(url));
 }

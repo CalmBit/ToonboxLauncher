@@ -1,5 +1,6 @@
 #pragma once
 #include <QMainWindow>
+#include <QWidget>
 #include <QMouseEvent>
 #include <QPoint>
 
@@ -20,20 +21,16 @@ class Launcher : public QMainWindow
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
 
-private slots:
-        void on_push_button_close_clicked();
-
+    private slots:
         void on_push_button_minimize_clicked();
-
-        void on_line_edit_username_returnPressed();
-
-        void on_line_edit_password_returnPressed();
-
+        void on_push_button_close_clicked();
         void on_push_button_home_page_clicked();
-
         void on_push_button_report_a_bug_clicked();
 
-private:
+        void on_line_edit_username_returnPressed();
+        void on_line_edit_password_returnPressed();
+
+    private:
         Ui::Launcher *ui;
 
         bool m_captured;
