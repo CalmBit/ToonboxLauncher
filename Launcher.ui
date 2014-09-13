@@ -433,9 +433,21 @@ QPushButton#push_button_play:pressed {
      <rect>
       <x>455</x>
       <y>245</y>
-      <width>340</width>
+      <width>345</width>
       <height>30</height>
      </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>345</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>345</width>
+      <height>30</height>
+     </size>
     </property>
     <property name="font">
      <font>
