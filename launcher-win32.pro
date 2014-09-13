@@ -1,7 +1,7 @@
 QT += core gui widgets
 TARGET = launcher
 TEMPLATE = app
-INCLUDEPATH += src
+INCLUDEPATH += src dependencies
 
 SOURCES += \
     src/core/main.cpp \
