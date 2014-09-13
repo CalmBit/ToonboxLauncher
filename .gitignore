@@ -1,1 +1,4 @@
-launcher-win32.pro.user
+launcher-win32.pro.user*
+
+Debug
+Release
