@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QPoint>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QString>
 #include <QDesktopServices>
@@ -25,6 +26,21 @@ Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
 
     // Put focus on the username line edit:
     ui->line_edit_username->setFocus();
+
+    // Update the manifest and compare version strings:
+    patcher->update_manifest(DISTRIBUTION_TOKEN.c_str());
+    QString launcher_version = patcher->get_launcher_version();
+    if(!launcher_version.isEmpty() && (launcher_version != VERSION.c_str()))
+    {
+        QMessageBox message_box_out_of_date;
+        message_box_out_of_date.setWindowTitle("Out of date!");
+        message_box_out_of_date.setText(ERROR_OUT_OF_DATE.c_str());
+        message_box_out_of_date.setIcon(QMessageBox::Critical);
+        message_box_out_of_date.setStandardButtons(QMessageBox::Cancel);
+        message_box_out_of_date.exec();
+
+        exit(1);
+    }
 }
 
 Launcher::~Launcher()
