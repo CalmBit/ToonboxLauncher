@@ -54,7 +54,7 @@ void Patcher::update_manifest(QString distribution_token, QString filename)
 
     if(reply->error() == QNetworkReply::NoError)
     {
-        parse_manifest(reply->readAll());
+        this->parse_manifest(reply->readAll());
     }
 
     delete reply;

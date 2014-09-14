@@ -1,6 +1,14 @@
 #pragma once
 #include <QString>
 #include <QUrl>
+#include <QByteArray>
+
+struct LoginReply
+{
+    bool success;
+    int error_code;
+    QString response;
+};
 
 class Authenticator
 {
@@ -12,8 +20,9 @@ class Authenticator
         void set_url(QUrl url);
         QUrl get_url();
 
-        QString login(QString username, QString password,
-                      QString distribution = "dev");
+        LoginReply login(QString username, QString password,
+                         QString distribution = "dev");
+        LoginReply parse_login_reply(QByteArray reply);
 
     private:
         QUrl m_url;

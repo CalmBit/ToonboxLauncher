@@ -21,48 +21,96 @@ Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
 {
     ui->setupUi(this);
 
-    // Window properties:
+    // Get up to date with the manifest:
+    this->update_manifest();
+
+    // Remove the window's border, and make the background color translucent:
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
 
-    // Put focus on the username line edit:
+    // For ease of logging in, put focus on the username line edit:
     ui->line_edit_username->setFocus();
+}
 
-    // Update the manifest and compare version strings:
+Launcher::~Launcher()
+{
+    delete ui;
+    delete patcher;
+    delete authenticator;
+}
+
+void Launcher::launch()
+{
+    // Disable the launcher's login, and content packs functionality:
+    ui->push_button_play->setEnabled(false);
+    ui->line_edit_username->setEnabled(false);
+    ui->line_edit_password->setEnabled(false);
+    // TODO: Disable the content packs button.
+
+    // Let the user know we're working:
+    ui->label_status->setText(STRING_LOGIN_WAITING);
+
+    // Get up to date with the manifest:
+    this->update_manifest();
+
+    LoginReply login_reply = authenticator->login(
+        ui->line_edit_username->text(), ui->line_edit_password->text(),
+        DISTRIBUTION);
+
+    if(!login_reply.success)
+    {
+        // Update the status label with our error response:
+        ui->label_status->setText(QString::number(login_reply.error_code) + ": " + login_reply.response);
+
+        // Enable the launcher's login, and content packs functionality:
+        ui->push_button_play->setEnabled(true);
+        ui->line_edit_username->setEnabled(true);
+        ui->line_edit_password->setEnabled(true);
+        // TODO: Enable the content packs button.
+
+        // For ease of logging in, put focus on the username line edit:
+        ui->line_edit_username->setFocus();
+
+        return;
+    }
+}
+
+void Launcher::update_manifest()
+{
     patcher->update_manifest(DISTRIBUTION_TOKEN);
+
+    // Update the version labels:
+    QString server_version = patcher->get_server_version();
     QString launcher_version = patcher->get_launcher_version();
+    if(server_version.isEmpty())
+    {
+        ui->label_server_version->setText(STRING_NO_VERSION);
+    }
+    else
+    {
+        ui->label_server_version->setText(server_version);
+    }
+    if(launcher_version.isEmpty())
+    {
+        ui->label_launcher_version->setText(STRING_NO_VERSION);
+    }
+    else
+    {
+        ui->label_launcher_version->setText(launcher_version);
+    }
+
+    // Ensure our launcher is up to date:
     if(!launcher_version.isEmpty() && (launcher_version != VERSION))
     {
         QMessageBox message_box_out_of_date;
-        message_box_out_of_date.setWindowTitle("Out of date!");
-        message_box_out_of_date.setText(ERROR_OUT_OF_DATE);
+        message_box_out_of_date.setWindowTitle(STRING_OUT_OF_DATE_TITLE);
+        message_box_out_of_date.setText(STRING_OUT_OF_DATE_MESSAGE);
         message_box_out_of_date.setIcon(QMessageBox::Critical);
         message_box_out_of_date.setStandardButtons(QMessageBox::Cancel);
         message_box_out_of_date.exec();
 
         exit(1);
     }
-
-    // Update the version labels:
-    QString server_version = patcher->get_server_version();
-    if(!server_version.isEmpty())
-    {
-        ui->label_server_version->setText(server_version);
-    }
-    if(!launcher_version.isEmpty())
-    {
-        ui->label_launcher_version->setText(launcher_version);
-    }
-}
-
-Launcher::~Launcher()
-{
-    delete ui;
-}
-
-void Launcher::launch()
-{
-    ui->push_button_play->setEnabled(false);
 }
 
 void Launcher::mousePressEvent(QMouseEvent *event)
@@ -141,6 +189,9 @@ void Launcher::on_line_edit_password_returnPressed()
     }
     else
     {
-        this->launch();
+        if(ui->push_button_play->isEnabled())
+        {
+            this->launch();
+        }
     }
 }

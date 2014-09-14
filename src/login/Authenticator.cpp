@@ -10,6 +10,8 @@
 #include <QByteArray>
 #include <QNetworkReply>
 #include <QObject>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 Authenticator::Authenticator(QString url) : m_url(url)
 {
@@ -34,8 +36,8 @@ QUrl Authenticator::get_url()
     return m_url;
 }
 
-QString Authenticator::login(QString username, QString password,
-                             QString distribution)
+LoginReply Authenticator::login(QString username, QString password,
+                                QString distribution)
 {
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;
@@ -54,13 +56,65 @@ QString Authenticator::login(QString username, QString password,
                      &event_loop, SLOT(quit()));
     event_loop.exec();
 
-    QByteArray response;
+    LoginReply login_reply;
+    login_reply.success = false;
+
     if(reply->error() == QNetworkReply::NoError)
     {
-        response = reply->readAll();
+        login_reply = this->parse_login_reply(reply->readAll());
+    }
+    else
+    {
+        login_reply.error_code = 900;
+        login_reply.response = "Couldn't connect to the account server.";
     }
 
     delete reply;
 
-    return QString(response);
+    return login_reply;
+}
+
+LoginReply Authenticator::parse_login_reply(QByteArray reply)
+{
+    LoginReply login_reply;
+    login_reply.success = false;
+    login_reply.response = "Couldn't connect to the account server.";
+
+    QJsonDocument document = QJsonDocument::fromJson(reply);
+    QJsonObject object = document.object();
+    if(!object.contains("success"))
+    {
+        login_reply.error_code = 901;
+        return login_reply;
+    }
+
+    login_reply.success = object["success"].toBool();
+    if(login_reply.success)
+    {
+        login_reply.error_code = 0;
+    }
+    else if(object.contains("errorCode"))
+    {
+        login_reply.error_code = object["errorCode"].toInt();
+    }
+    else
+    {
+        login_reply.error_code = 902;
+        return login_reply;
+    }
+
+    if(login_reply.success && object.contains("token"))
+    {
+        login_reply.response = object["token"].toString();
+    }
+    else if(!login_reply.success && object.contains("reason"))
+    {
+        login_reply.response = object["reason"].toString();
+    }
+    else
+    {
+        login_reply.error_code = 903;
+    }
+
+    return login_reply;
 }
