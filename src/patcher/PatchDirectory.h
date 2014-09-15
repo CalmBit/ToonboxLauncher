@@ -3,18 +3,20 @@
 
 #include <vector>
 
+#include <QString>
+
 class PatchDirectory
 {
     public:
-        PatchDirectory(QString path);
+        PatchDirectory(QString name);
 
-        void set_path(QString path);
-        QString get_path();
+        void set_name(QString name);
+        QString get_name();
 
         void add_file(PatchFile file);
         std::vector<PatchFile> get_files();
 
     private:
-        QString m_path;
+        QString m_name;
         std::vector<PatchFile> m_files;
 };

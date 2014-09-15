@@ -5,18 +5,18 @@
 
 #include <QString>
 
-PatchDirectory::PatchDirectory(QString path) : m_path(path)
+PatchDirectory::PatchDirectory(QString name) : m_name(name)
 {
 }
 
-void PatchDirectory::set_path(QString path)
+void PatchDirectory::set_name(QString name)
 {
-    m_path = path;
+    m_name = name;
 }
 
-QString PatchDirectory::get_path()
+QString PatchDirectory::get_name()
 {
-    return m_path;
+    return m_name;
 }
 
 void PatchDirectory::add_file(PatchFile file)
