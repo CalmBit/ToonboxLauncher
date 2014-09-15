@@ -39,42 +39,6 @@ Launcher::~Launcher()
     delete authenticator;
 }
 
-void Launcher::launch()
-{
-    // Disable the launcher's login, and content packs functionality:
-    ui->push_button_play->setEnabled(false);
-    ui->line_edit_username->setEnabled(false);
-    ui->line_edit_password->setEnabled(false);
-    // TODO: Disable the content packs button.
-
-    // Let the user know we're working:
-    ui->label_status->setText(STRING_LOGIN_WAITING);
-
-    // Get up to date with the manifest:
-    this->update_manifest();
-
-    LoginReply login_reply = authenticator->login(
-        ui->line_edit_username->text(), ui->line_edit_password->text(),
-        DISTRIBUTION);
-
-    if(!login_reply.success)
-    {
-        // Update the status label with our error response:
-        ui->label_status->setText(QString::number(login_reply.error_code) + ": " + login_reply.response);
-
-        // Enable the launcher's login, and content packs functionality:
-        ui->push_button_play->setEnabled(true);
-        ui->line_edit_username->setEnabled(true);
-        ui->line_edit_password->setEnabled(true);
-        // TODO: Enable the content packs button.
-
-        // For ease of logging in, put focus on the username line edit:
-        ui->line_edit_username->setFocus();
-
-        return;
-    }
-}
-
 void Launcher::update_manifest()
 {
     patcher->update_manifest(DISTRIBUTION_TOKEN);
@@ -111,6 +75,50 @@ void Launcher::update_manifest()
 
         exit(1);
     }
+}
+
+void Launcher::launch()
+{
+    // Disable the launcher's login, and content packs functionality:
+    ui->push_button_play->setEnabled(false);
+    ui->line_edit_username->setEnabled(false);
+    ui->line_edit_password->setEnabled(false);
+    // TODO: Disable the content packs button.
+
+    // Let the user know we're working:
+    ui->label_status->setText(STRING_LOGIN_WAITING);
+
+    // Get up to date with the manifest:
+    this->update_manifest();
+
+    // Verify the account credentials:
+    LoginReply login_reply = authenticator->login(
+        ui->line_edit_username->text(), ui->line_edit_password->text(),
+        DISTRIBUTION);
+
+    if(!login_reply.success)
+    {
+        // Update the status label with our error response:
+        ui->label_status->setText(QString::number(login_reply.error_code) + ": " + login_reply.response);
+
+        // Enable the launcher's login, and content packs functionality:
+        ui->push_button_play->setEnabled(true);
+        ui->line_edit_username->setEnabled(true);
+        ui->line_edit_password->setEnabled(true);
+        // TODO: Enable the content packs button.
+
+        // For ease of logging in, put focus on the username line edit:
+        ui->line_edit_username->setFocus();
+
+        return;
+    }
+
+    // Alright, begin the patching process:
+    this->patch();
+}
+
+void Launcher::patch()
+{
 }
 
 void Launcher::mousePressEvent(QMouseEvent *event)

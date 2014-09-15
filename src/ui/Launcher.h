@@ -19,8 +19,9 @@ class Launcher : public QMainWindow
         explicit Launcher(QWidget *parent = 0);
         ~Launcher();
 
-        void launch();
         void update_manifest();
+        void launch();
+        void patch();
 
     protected:
         void mousePressEvent(QMouseEvent *event);
