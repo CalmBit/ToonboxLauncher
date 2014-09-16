@@ -146,22 +146,29 @@ PatchFile Patcher::parse_file(QXmlStreamReader &reader)
     QXmlStreamAttributes attributes = reader.attributes();
     PatchFile file(attributes.value("name").toString(), 0, "");
 
-    reader.readNext();
-
-    while(reader.name() != "file")
+    do
     {
+        if(reader.readNext() != QXmlStreamReader::StartElement)
+        {
+            continue;
+        }
+
         QString name = reader.name().toString();
-        reader.readNext();
         if(name == "size")
         {
-            file.set_size(reader.text().toULong());
+            if(reader.readNext() == QXmlStreamReader::Characters)
+            {
+                file.set_size(reader.text().toULong());
+            }
         }
         else if(name == "hash")
         {
-            file.set_hash(reader.text().toString());
+            if(reader.readNext() == QXmlStreamReader::Characters)
+            {
+                file.set_hash(reader.text().toString());
+            }
         }
-        reader.readNext();
-    }
+    } while(reader.name() != "file");
 
     reader.readNext();
 
