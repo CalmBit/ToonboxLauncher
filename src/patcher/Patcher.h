@@ -19,6 +19,7 @@ class Patcher
         void set_url(QUrl url);
         QUrl get_url();
 
+        void clear_manifest();
         void update_manifest(QString distribution_token,
                              QString filename = "patcher.xml");
         void parse_manifest(QByteArray manifest);

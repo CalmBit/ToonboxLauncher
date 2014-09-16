@@ -42,8 +42,20 @@ QUrl Patcher::get_url()
     return m_url;
 }
 
+void Patcher::clear_manifest()
+{
+    m_directories.clear();
+
+    m_launcher_version = "";
+    m_account_server = "";
+    m_client_agent = "";
+    m_server_version = "";
+}
+
 void Patcher::update_manifest(QString distribution_token, QString filename)
 {
+    this->clear_manifest();
+
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;
 
