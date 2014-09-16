@@ -1,6 +1,10 @@
 #include "Patcher.h"
+#include "PatchFile.h"
+#include "PatchDirectory.h"
 
 #include "core/constants.h"
+
+#include <vector>
 
 #include <QString>
 #include <QUrl>
@@ -11,6 +15,7 @@
 #include <QObject>
 #include <QByteArray>
 #include <QXmlStreamReader>
+#include <QXmlStreamAttributes>
 
 Patcher::Patcher(QString url) : m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version("")
@@ -72,30 +77,93 @@ void Patcher::parse_manifest(QByteArray manifest)
         }
 
         QString name = reader.name().toString();
-        if((name == "patcher") || (reader.readNext() != QXmlStreamReader::Characters))
-        {
-            continue;
-        }
-
         if(name == "launcher-version")
         {
-            m_launcher_version = reader.text().toString();
+            if(reader.readNext() == QXmlStreamReader::Characters)
+            {
+                m_launcher_version = reader.text().toString();
+            }
         }
         else if(name == "account-server")
         {
-            m_account_server = reader.text().toString();
+            if(reader.readNext() == QXmlStreamReader::Characters)
+            {
+                m_account_server = reader.text().toString();
+            }
         }
         else if(name == "client-agent")
         {
-            m_client_agent = reader.text().toString();
+            if(reader.readNext() == QXmlStreamReader::Characters)
+            {
+                m_client_agent = reader.text().toString();
+            }
         }
         else if(name == "server-version")
         {
-            m_server_version = reader.text().toString();
+            if(reader.readNext() == QXmlStreamReader::Characters)
+            {
+                m_server_version = reader.text().toString();
+            }
+        }
+        else if(name == "directory")
+        {
+            this->add_directory(this->parse_directory(reader));
         }
     }
 
     reader.clear();
+}
+
+PatchDirectory Patcher::parse_directory(QXmlStreamReader &reader)
+{
+    QXmlStreamAttributes attributes = reader.attributes();
+    PatchDirectory directory(attributes.value("name").toString());
+
+    reader.readNext();
+
+    while(reader.name() != "directory")
+    {
+        directory.add_file(this->parse_file(reader));
+    }
+
+    return directory;
+}
+
+PatchFile Patcher::parse_file(QXmlStreamReader &reader)
+{
+    QXmlStreamAttributes attributes = reader.attributes();
+    PatchFile file(attributes.value("name").toString(), 0, "");
+
+    reader.readNext();
+
+    while(reader.name() != "file")
+    {
+        QString name = reader.name().toString();
+        reader.readNext();
+        if(name == "size")
+        {
+            file.set_size(reader.text().toULong());
+        }
+        else if(name == "hash")
+        {
+            file.set_hash(reader.text().toString());
+        }
+        reader.readNext();
+    }
+
+    reader.readNext();
+
+    return file;
+}
+
+void Patcher::add_directory(PatchDirectory directory)
+{
+    m_directories.push_back(directory);
+}
+
+std::vector<PatchDirectory> Patcher::get_directories()
+{
+    return m_directories;
 }
 
 QString Patcher::get_launcher_version()
