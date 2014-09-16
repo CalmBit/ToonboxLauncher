@@ -1,10 +1,8 @@
 #include "PatchFile.h"
 
-#include <stdint.h>
-
 #include <QString>
 
-PatchFile::PatchFile(QString name, uintmax_t size, QString hash) :
+PatchFile::PatchFile(QString name, ulong size, QString hash) :
     m_name(name), m_size(size), m_hash(hash)
 {
 }
@@ -31,12 +29,12 @@ QString PatchFile::get_name()
     return m_name;
 }
 
-void PatchFile::set_size(uintmax_t size)
+void PatchFile::set_size(ulong size)
 {
     m_size = size;
 }
 
-uintmax_t PatchFile::get_size()
+ulong PatchFile::get_size()
 {
     return m_size;
 }
