@@ -36,8 +36,7 @@ QUrl Authenticator::get_url()
     return m_url;
 }
 
-LoginReply Authenticator::login(QString username, QString password,
-                                QString distribution)
+LoginReply Authenticator::login(QString username, QString password, QString distribution)
 {
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;

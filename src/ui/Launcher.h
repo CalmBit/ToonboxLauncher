@@ -7,42 +7,43 @@
 #include <QMouseEvent>
 #include <QPoint>
 
-namespace Ui {
+namespace Ui
+{
 class Launcher;
 }
 
 class Launcher : public QMainWindow
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        explicit Launcher(QWidget *parent = 0);
-        ~Launcher();
+  public:
+    explicit Launcher(QWidget *parent = 0);
+    ~Launcher();
 
-        void update_manifest();
-        void launch();
-        void patch();
+    void update_manifest();
+    void launch();
+    void patch();
 
-    protected:
-        void mousePressEvent(QMouseEvent *event);
-        void mouseMoveEvent(QMouseEvent *event);
-        void mouseReleaseEvent(QMouseEvent *event);
+  protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
-    private slots:
-        void on_push_button_minimize_clicked();
-        void on_push_button_close_clicked();
-        void on_push_button_home_page_clicked();
-        void on_push_button_report_a_bug_clicked();
-        void on_push_button_play_clicked();
+  private slots:
+    void on_push_button_minimize_clicked();
+    void on_push_button_close_clicked();
+    void on_push_button_home_page_clicked();
+    void on_push_button_report_a_bug_clicked();
+    void on_push_button_play_clicked();
 
-        void on_line_edit_username_returnPressed();
-        void on_line_edit_password_returnPressed();
+    void on_line_edit_username_returnPressed();
+    void on_line_edit_password_returnPressed();
 
-    private:
-        Ui::Launcher *ui;
-        Patcher *patcher;
-        Authenticator *authenticator;
+  private:
+    Ui::Launcher *ui;
+    Patcher *patcher;
+    Authenticator *authenticator;
 
-        bool m_captured;
-        QPoint m_last_pos;
+    bool m_captured;
+    QPoint m_last_pos;
 };
