@@ -16,7 +16,7 @@ bool PatchFile::operator==(PatchFile &other)
 bool PatchFile::operator!=(PatchFile &other)
 {
     return ((this->get_size() != other.get_size()) &&
-            (this->get_hash() != other.get_hash());
+            (this->get_hash() != other.get_hash()));
 }
 
 void PatchFile::set_name(QString name)
