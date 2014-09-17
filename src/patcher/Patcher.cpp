@@ -69,8 +69,7 @@ void Patcher::update_manifest(QString distribution_token, QString filename)
                      &event_loop, SLOT(quit()));
     event_loop.exec();
 
-    if(reply->error() == QNetworkReply::NoError)
-    {
+    if(reply->error() == QNetworkReply::NoError) {
         this->parse_manifest(reply->readAll());
     }
 
@@ -81,44 +80,29 @@ void Patcher::parse_manifest(QByteArray manifest)
 {
     QXmlStreamReader reader(manifest);
 
-    while(!reader.atEnd() && !reader.hasError())
-    {
-        if(reader.readNext() != QXmlStreamReader::StartElement)
-        {
+    while(!reader.atEnd() && !reader.hasError()) {
+        if(reader.readNext() != QXmlStreamReader::StartElement) {
             continue;
         }
 
         QString name = reader.name().toString();
-        if(name == "launcher-version")
-        {
-            if(reader.readNext() == QXmlStreamReader::Characters)
-            {
+        if(name == "launcher-version") {
+            if(reader.readNext() == QXmlStreamReader::Characters) {
                 m_launcher_version = reader.text().toString();
             }
-        }
-        else if(name == "account-server")
-        {
-            if(reader.readNext() == QXmlStreamReader::Characters)
-            {
+        } else if(name == "account-server") {
+            if(reader.readNext() == QXmlStreamReader::Characters) {
                 m_account_server = reader.text().toString();
             }
-        }
-        else if(name == "client-agent")
-        {
-            if(reader.readNext() == QXmlStreamReader::Characters)
-            {
+        } else if(name == "client-agent") {
+            if(reader.readNext() == QXmlStreamReader::Characters) {
                 m_client_agent = reader.text().toString();
             }
-        }
-        else if(name == "server-version")
-        {
-            if(reader.readNext() == QXmlStreamReader::Characters)
-            {
+        } else if(name == "server-version") {
+            if(reader.readNext() == QXmlStreamReader::Characters) {
                 m_server_version = reader.text().toString();
             }
-        }
-        else if(name == "directory")
-        {
+        } else if(name == "directory") {
             this->add_directory(this->parse_directory(reader));
         }
     }
@@ -133,8 +117,7 @@ PatchDirectory Patcher::parse_directory(QXmlStreamReader &reader)
 
     reader.readNext();
 
-    while(reader.name() != "directory")
-    {
+    while(reader.name() != "directory") {
         directory.add_file(this->parse_file(reader));
     }
 
@@ -146,25 +129,18 @@ PatchFile Patcher::parse_file(QXmlStreamReader &reader)
     QXmlStreamAttributes attributes = reader.attributes();
     PatchFile file(attributes.value("name").toString(), 0, "");
 
-    do
-    {
-        if(reader.readNext() != QXmlStreamReader::StartElement)
-        {
+    do {
+        if(reader.readNext() != QXmlStreamReader::StartElement) {
             continue;
         }
 
         QString name = reader.name().toString();
-        if(name == "size")
-        {
-            if(reader.readNext() == QXmlStreamReader::Characters)
-            {
+        if(name == "size") {
+            if(reader.readNext() == QXmlStreamReader::Characters) {
                 file.set_size(reader.text().toULong());
             }
-        }
-        else if(name == "hash")
-        {
-            if(reader.readNext() == QXmlStreamReader::Characters)
-            {
+        } else if(name == "hash") {
+            if(reader.readNext() == QXmlStreamReader::Characters) {
                 file.set_hash(reader.text().toString());
             }
         }

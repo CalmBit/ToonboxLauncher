@@ -59,12 +59,9 @@ LoginReply Authenticator::login(QString username, QString password, QString dist
     LoginReply login_reply;
     login_reply.success = false;
 
-    if(reply->error() == QNetworkReply::NoError)
-    {
+    if(reply->error() == QNetworkReply::NoError) {
         login_reply = this->parse_login_reply(reply->readAll());
-    }
-    else
-    {
+    } else {
         login_reply.error_code = ERROR_CODE_NO_CONNECTION;
         login_reply.response = ERROR_NO_CONNECTION;
     }
@@ -83,31 +80,22 @@ LoginReply Authenticator::parse_login_reply(QByteArray reply)
 
     QJsonDocument document = QJsonDocument::fromJson(reply);
     QJsonObject object = document.object();
-    if(!object.contains("success"))
-    {
+    if(!object.contains("success")) {
         return login_reply;
     }
 
     login_reply.success = object["success"].toBool();
-    if(login_reply.success)
-    {
+    if(login_reply.success) {
         login_reply.error_code = 0;
-    }
-    else if(object.contains("errorCode"))
-    {
+    } else if(object.contains("errorCode")) {
         login_reply.error_code = object["errorCode"].toInt();
-    }
-    else
-    {
+    } else {
         return login_reply;
     }
 
-    if(login_reply.success && object.contains("token"))
-    {
+    if(login_reply.success && object.contains("token")) {
         login_reply.response = object["token"].toString();
-    }
-    else if(!login_reply.success && object.contains("reason"))
-    {
+    } else if(!login_reply.success && object.contains("reason")) {
         login_reply.response = object["reason"].toString();
     }
 

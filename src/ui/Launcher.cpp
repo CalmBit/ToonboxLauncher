@@ -50,23 +50,17 @@ void Launcher::update_manifest()
     if(server_version.isEmpty())
     {
         ui->label_server_version->setText(GUI_NO_VERSION);
-    }
-    else
-    {
+    } else {
         ui->label_server_version->setText(server_version);
     }
-    if(launcher_version.isEmpty())
-    {
+    if(launcher_version.isEmpty()) {
         ui->label_launcher_version->setText(GUI_NO_VERSION);
-    }
-    else
-    {
+    } else {
         ui->label_launcher_version->setText(launcher_version);
     }
 
     // Ensure our launcher is up to date:
-    if(!launcher_version.isEmpty() && (launcher_version != VERSION))
-    {
+    if(!launcher_version.isEmpty() && (launcher_version != VERSION)) {
         QMessageBox message_box;
         message_box.setWindowTitle(ERROR_UPDATE_LAUNCHER_TITLE);
         message_box.setText(ERROR_UPDATE_LAUNCHER_TEXT);
