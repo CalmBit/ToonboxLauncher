@@ -47,8 +47,7 @@ void Launcher::update_manifest()
     // Update the version labels:
     QString server_version = patcher->get_server_version();
     QString launcher_version = patcher->get_launcher_version();
-    if(server_version.isEmpty())
-    {
+    if(server_version.isEmpty()) {
         ui->label_server_version->setText(GUI_NO_VERSION);
     } else {
         ui->label_server_version->setText(server_version);
@@ -91,8 +90,7 @@ void Launcher::login()
     LoginReply login_reply = authenticator->login(
         ui->line_edit_username->text(), ui->line_edit_password->text(),
         DISTRIBUTION);
-    if(!login_reply.success)
-    {
+    if(!login_reply.success) {
         // Update the status label with our error response:
         ui->label_status->setText(QString::number(login_reply.error_code) + ": " +
                                   login_reply.response);
@@ -119,8 +117,7 @@ void Launcher::update()
 
 void Launcher::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
-    {
+    if(event->button() == Qt::LeftButton) {
         m_last_pos = event->pos();
         m_captured = true;
     }
@@ -128,16 +125,14 @@ void Launcher::mousePressEvent(QMouseEvent *event)
 
 void Launcher::mouseMoveEvent(QMouseEvent *event)
 {
-    if(m_captured)
-    {
+    if(m_captured) {
         this->move(this->pos() + (event->pos()-m_last_pos));
     }
 }
 
 void Launcher::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
-    {
+    if(event->button() == Qt::LeftButton) {
         m_captured = false;
     }
 }
@@ -167,35 +162,26 @@ void Launcher::on_push_button_report_a_bug_clicked()
 void Launcher::on_push_button_play_clicked()
 {
     if(!ui->line_edit_username->text().isEmpty() &&
-       !ui->line_edit_password->text().isEmpty())
-    {
+       !ui->line_edit_password->text().isEmpty()) {
         this->login();
     }
 }
 
 void Launcher::on_line_edit_username_returnPressed()
 {
-    if(!ui->line_edit_username->text().isEmpty())
-    {
+    if(!ui->line_edit_username->text().isEmpty()) {
         ui->line_edit_password->setFocus();
     }
 }
 
 void Launcher::on_line_edit_password_returnPressed()
 {
-    if(ui->line_edit_password->text().isEmpty())
-    {
+    if(ui->line_edit_password->text().isEmpty()) {
         return;
     }
-    if(ui->line_edit_username->text().isEmpty())
-    {
+    if(ui->line_edit_username->text().isEmpty()) {
         ui->line_edit_username->setFocus();
-    }
-    else
-    {
-        if(ui->push_button_play->isEnabled())
-        {
-            this->login();
-        }
+    } else if(ui->push_button_play->isEnabled()) {
+        this->login();
     }
 }
