@@ -2,6 +2,7 @@
 #include "ui_Launcher.h"
 
 #include "core/constants.h"
+#include "core/localizer.h"
 #include "patcher/Patcher.h"
 #include "login/Authenticator.h"
 
@@ -14,10 +15,10 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
-    ui(new Ui::Launcher), patcher(new Patcher(URL_DOWNLOAD_SERVER)),
-    authenticator(new Authenticator(URL_ACCOUNT_SERVER_ENDPOINT)),
-    m_captured(false), m_last_pos(QPoint(0, 0))
+Launcher::Launcher(QWidget *parent) : QMainWindow(parent), ui(new Ui::Launcher),
+    patcher(new Patcher(URL_DOWNLOAD_SERVER)),
+    authenticator(new Authenticator(URL_LOGIN_ENDPOINT)), m_captured(false),
+    m_last_pos(QPoint(0, 0))
 {
     ui->setupUi(this);
 
@@ -34,9 +35,9 @@ Launcher::Launcher(QWidget *parent) : QMainWindow(parent),
 
 Launcher::~Launcher()
 {
-    delete ui;
-    delete patcher;
     delete authenticator;
+    delete patcher;
+    delete ui;
 }
 
 void Launcher::update_manifest()
@@ -48,7 +49,7 @@ void Launcher::update_manifest()
     QString launcher_version = patcher->get_launcher_version();
     if(server_version.isEmpty())
     {
-        ui->label_server_version->setText(STRING_NO_VERSION);
+        ui->label_server_version->setText(GUI_NO_VERSION);
     }
     else
     {
@@ -56,7 +57,7 @@ void Launcher::update_manifest()
     }
     if(launcher_version.isEmpty())
     {
-        ui->label_launcher_version->setText(STRING_NO_VERSION);
+        ui->label_launcher_version->setText(GUI_NO_VERSION);
     }
     else
     {
@@ -66,27 +67,28 @@ void Launcher::update_manifest()
     // Ensure our launcher is up to date:
     if(!launcher_version.isEmpty() && (launcher_version != VERSION))
     {
-        QMessageBox message_box_out_of_date;
-        message_box_out_of_date.setWindowTitle(STRING_OUT_OF_DATE_TITLE);
-        message_box_out_of_date.setText(STRING_OUT_OF_DATE_MESSAGE);
-        message_box_out_of_date.setIcon(QMessageBox::Critical);
-        message_box_out_of_date.setStandardButtons(QMessageBox::Cancel);
-        message_box_out_of_date.exec();
+        QMessageBox message_box;
+        message_box.setWindowTitle(ERROR_UPDATE_LAUNCHER_TITLE);
+        message_box.setText(ERROR_UPDATE_LAUNCHER_TEXT);
+        message_box.setIcon(QMessageBox::Critical);
+        message_box.setStandardButtons(QMessageBox::Cancel);
+        message_box.exec();
 
         exit(1);
     }
 }
 
-void Launcher::launch()
+void Launcher::login()
 {
-    // Disable the launcher's login, and content packs functionality:
+    // Disable the launcher's login, and content packs functionality so nothing
+    // weird happens while we work:
     ui->push_button_play->setEnabled(false);
     ui->line_edit_username->setEnabled(false);
     ui->line_edit_password->setEnabled(false);
     // TODO: Disable the content packs button.
 
     // Let the user know we're working:
-    ui->label_status->setText(STRING_LOGIN_WAITING);
+    ui->label_status->setText(GUI_LOGIN_WAITING);
 
     // Get up to date with the manifest:
     this->update_manifest();
@@ -95,11 +97,11 @@ void Launcher::launch()
     LoginReply login_reply = authenticator->login(
         ui->line_edit_username->text(), ui->line_edit_password->text(),
         DISTRIBUTION);
-
     if(!login_reply.success)
     {
         // Update the status label with our error response:
-        ui->label_status->setText(QString::number(login_reply.error_code) + ": " + login_reply.response);
+        ui->label_status->setText(QString::number(login_reply.error_code) + ": " +
+                                  login_reply.response);
 
         // Enable the launcher's login, and content packs functionality:
         ui->push_button_play->setEnabled(true);
@@ -113,11 +115,11 @@ void Launcher::launch()
         return;
     }
 
-    // Alright, begin the patching process:
-    this->patch();
+    // Alright, begin the update process:
+    this->update();
 }
 
-void Launcher::patch()
+void Launcher::update()
 {
 }
 
@@ -173,7 +175,7 @@ void Launcher::on_push_button_play_clicked()
     if(!ui->line_edit_username->text().isEmpty() &&
        !ui->line_edit_password->text().isEmpty())
     {
-        this->launch();
+        this->login();
     }
 }
 
@@ -199,7 +201,7 @@ void Launcher::on_line_edit_password_returnPressed()
     {
         if(ui->push_button_play->isEnabled())
         {
-            this->launch();
+            this->login();
         }
     }
 }

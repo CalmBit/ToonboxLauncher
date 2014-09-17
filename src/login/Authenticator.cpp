@@ -1,6 +1,7 @@
 #include "Authenticator.h"
 
 #include "core/constants.h"
+#include "core/localizer.h"
 
 #include <QString>
 #include <QUrl>
@@ -64,8 +65,8 @@ LoginReply Authenticator::login(QString username, QString password, QString dist
     }
     else
     {
-        login_reply.error_code = 900;
-        login_reply.response = "Couldn't connect to the account server.";
+        login_reply.error_code = ERROR_CODE_NO_CONNECTION;
+        login_reply.response = ERROR_NO_CONNECTION;
     }
 
     delete reply;
@@ -77,13 +78,13 @@ LoginReply Authenticator::parse_login_reply(QByteArray reply)
 {
     LoginReply login_reply;
     login_reply.success = false;
-    login_reply.response = "Couldn't connect to the account server.";
+    login_reply.response = ERROR_INVALID_RESPONSE;
+    login_reply.error_code = ERROR_CODE_INVALID_RESPONSE;
 
     QJsonDocument document = QJsonDocument::fromJson(reply);
     QJsonObject object = document.object();
     if(!object.contains("success"))
     {
-        login_reply.error_code = 901;
         return login_reply;
     }
 
@@ -98,7 +99,6 @@ LoginReply Authenticator::parse_login_reply(QByteArray reply)
     }
     else
     {
-        login_reply.error_code = 902;
         return login_reply;
     }
 
@@ -109,10 +109,6 @@ LoginReply Authenticator::parse_login_reply(QByteArray reply)
     else if(!login_reply.success && object.contains("reason"))
     {
         login_reply.response = object["reason"].toString();
-    }
-    else
-    {
-        login_reply.error_code = 903;
     }
 
     return login_reply;

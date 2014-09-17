@@ -21,8 +21,8 @@ class Launcher : public QMainWindow
     ~Launcher();
 
     void update_manifest();
-    void launch();
-    void patch();
+    void login();
+    void update();
 
   protected:
     void mousePressEvent(QMouseEvent *event);
