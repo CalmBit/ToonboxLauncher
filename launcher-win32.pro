@@ -6,6 +6,7 @@ INCLUDEPATH += src dependencies
 
 SOURCES += \
     src/core/main.cpp \
+    src/ui/DraggableWindow.cpp \
     src/ui/Launcher.cpp \
     src/patcher/Patcher.cpp \
     src/patcher/PatchFile.cpp \
@@ -15,6 +16,7 @@ SOURCES += \
 HEADERS += \
     src/core/constants.h \
     src/core/localizer.h \
+    src/ui/DraggableWindow.h \
     src/ui/Launcher.h \
     src/patcher/Patcher.h \
     src/patcher/PatchFile.h \
