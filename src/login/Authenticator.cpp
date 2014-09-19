@@ -3,8 +3,8 @@
 #include "core/constants.h"
 #include "core/localizer.h"
 
-#include <QString>
 #include <QUrl>
+#include <QString>
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -14,37 +14,31 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-Authenticator::Authenticator(QString url) : m_url(url)
+Authenticator::Authenticator(QUrl login_endpoint) :
+    m_login_endpoint(login_endpoint)
 {
 }
 
-Authenticator::Authenticator(QUrl url) : m_url(url)
+void Authenticator::set_login_endpoint(QUrl login_endpoint)
 {
+    m_login_endpoint = login_endpoint;
 }
 
-void Authenticator::set_url(QString url)
+QUrl Authenticator::get_login_endpoint()
 {
-    m_url = QUrl(url);
+    return m_login_endpoint;
 }
 
-void Authenticator::set_url(QUrl url)
-{
-    m_url = url;
-}
-
-QUrl Authenticator::get_url()
-{
-    return m_url;
-}
-
-LoginReply Authenticator::login(QString username, QString password, QString distribution)
+LoginReply Authenticator::login(QString username, QString password,
+                                QString distribution)
 {
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;
 
-    QNetworkRequest request(m_url);
+    QNetworkRequest request(m_login_endpoint);
     request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setHeader(QNetworkRequest::ContentTypeHeader,
+                      "application/x-www-form-urlencoded");
     QByteArray parameters;
     parameters.append("n=" + username);
     parameters.append("&p=" + password);
@@ -71,14 +65,14 @@ LoginReply Authenticator::login(QString username, QString password, QString dist
     return login_reply;
 }
 
-LoginReply Authenticator::parse_login_reply(QByteArray reply)
+LoginReply Authenticator::parse_login_reply(QByteArray data)
 {
     LoginReply login_reply;
     login_reply.success = false;
-    login_reply.response = ERROR_INVALID_RESPONSE;
     login_reply.error_code = ERROR_CODE_INVALID_RESPONSE;
+    login_reply.response = ERROR_INVALID_RESPONSE;
 
-    QJsonDocument document = QJsonDocument::fromJson(reply);
+    QJsonDocument document = QJsonDocument::fromJson(data);
     QJsonObject object = document.object();
     if(!object.contains("success")) {
         return login_reply;

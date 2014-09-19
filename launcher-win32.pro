@@ -2,26 +2,26 @@ QT += core gui widgets network
 TARGET = launcher
 TEMPLATE = app
 CONFIG += c++11
-INCLUDEPATH += src dependencies
+INCLUDEPATH += src
 
 SOURCES += \
     src/core/main.cpp \
     src/ui/DraggableWindow.cpp \
-    src/ui/Launcher.cpp \
-    src/patcher/Patcher.cpp \
-    src/patcher/PatchFile.cpp \
-    src/patcher/PatchDirectory.cpp \
-    src/login/Authenticator.cpp
+    src/ui/LauncherWindow.cpp \
+    src/login/Authenticator.cpp \
+    src/updater/ManifestFile.cpp \
+    src/updater/ManifestDirectory.cpp \
+    src/updater/Updater.cpp
 
 HEADERS += \
     src/core/constants.h \
     src/core/localizer.h \
     src/ui/DraggableWindow.h \
-    src/ui/Launcher.h \
-    src/patcher/Patcher.h \
-    src/patcher/PatchFile.h \
-    src/patcher/PatchDirectory.h \
-    src/login/Authenticator.h
+    src/ui/LauncherWindow.h \
+    src/login/Authenticator.h \
+    src/updater/ManifestFile.h \
+    src/updater/ManifestDirectory.h \
+    src/updater/Updater.h
 
 FORMS += Launcher.ui
 

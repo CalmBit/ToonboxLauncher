@@ -19,4 +19,4 @@ class DraggableWindow : public QMainWindow
   private:
     bool m_captured;
     QPoint m_last_event_pos;
-}
+};

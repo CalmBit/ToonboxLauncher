@@ -13,16 +13,16 @@ struct LoginReply
 class Authenticator
 {
   public:
-    Authenticator(QString url);
-    Authenticator(QUrl url);
+    Authenticator(QUrl login_endpoint);
 
-    void set_url(QString url);
-    void set_url(QUrl url);
-    QUrl get_url();
+    void set_login_endpoint(QUrl login_endpoint);
+    QUrl get_login_endpoint();
 
-    LoginReply login(QString username, QString password, QString distribution = "dev");
-    LoginReply parse_login_reply(QByteArray reply);
+    LoginReply login(QString username, QString password,
+                     QString distribution = "dev");
 
   private:
-    QUrl m_url;
+    QUrl m_login_endpoint;
+
+    LoginReply parse_login_reply(QByteArray data);
 };

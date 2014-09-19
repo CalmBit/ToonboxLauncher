@@ -1,4 +1,4 @@
-#include "ui/Launcher.h"
+#include "ui/LauncherWindow.h"
 
 #include <QApplication>
 
@@ -6,8 +6,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    Launcher *launcher = new Launcher;
-    launcher->show();
+    LauncherWindow *launcher_window = new LauncherWindow;
+    launcher_window->show();
 
     return app.exec();
 }

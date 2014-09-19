@@ -1,13 +1,11 @@
-#include "Patcher.h"
-#include "PatchFile.h"
-#include "PatchDirectory.h"
-
-#include "core/constants.h"
+#include "Updater.h"
+#include "ManifestDirectory.h"
+#include "ManifestFile.h"
 
 #include <vector>
 
-#include <QString>
 #include <QUrl>
+#include <QString>
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -17,44 +15,59 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamAttributes>
 
-Patcher::Patcher(QString url) : m_url(url), m_launcher_version(""),
+Updater::Updater(QUrl url) : m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version("")
 {
 }
 
-Patcher::Patcher(QUrl url) : m_url(url), m_launcher_version(""),
-    m_account_server(""), m_client_agent(""), m_server_version("")
-{
-}
-
-void Patcher::set_url(QString url)
-{
-    m_url = QUrl(url);
-}
-
-void Patcher::set_url(QUrl url)
+void Updater::set_url(QUrl url)
 {
     m_url = url;
 }
 
-QUrl Patcher::get_url()
+QUrl Updater::get_url()
 {
     return m_url;
 }
 
-void Patcher::clear_manifest()
+QString Updater::get_launcher_version()
 {
-    m_directories.clear();
+    return m_launcher_version;
+}
 
+QString Updater::get_account_server()
+{
+    return m_account_server;
+}
+
+QString Updater::get_client_agent()
+{
+    return m_client_agent;
+}
+
+QString Updater::get_server_version()
+{
+    return m_server_version;
+}
+
+std::vector<ManifestDirectory> Updater::get_directories()
+{
+    return m_directories;
+}
+
+void Updater::add_directory(ManifestDirectory directory)
+{
+    m_directories.push_back(directory);
+}
+
+void Updater::update_manifest(QString distribution_token, QString filename)
+{
+    // Clear the data from the previous manifest:
+    m_directories.clear();
     m_launcher_version = "";
     m_account_server = "";
     m_client_agent = "";
     m_server_version = "";
-}
-
-void Patcher::update_manifest(QString distribution_token, QString filename)
-{
-    this->clear_manifest();
 
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;
@@ -76,9 +89,9 @@ void Patcher::update_manifest(QString distribution_token, QString filename)
     delete reply;
 }
 
-void Patcher::parse_manifest(QByteArray manifest)
+void Updater::parse_manifest(QByteArray data)
 {
-    QXmlStreamReader reader(manifest);
+    QXmlStreamReader reader(data);
 
     while(!reader.atEnd() && !reader.hasError()) {
         if(reader.readNext() != QXmlStreamReader::StartElement) {
@@ -103,31 +116,31 @@ void Patcher::parse_manifest(QByteArray manifest)
                 m_server_version = reader.text().toString();
             }
         } else if(name == "directory") {
-            this->add_directory(this->parse_directory(reader));
+            this->add_directory(this->parse_manifest_directory(reader));
         }
     }
 
     reader.clear();
 }
 
-PatchDirectory Patcher::parse_directory(QXmlStreamReader &reader)
+ManifestDirectory Updater::parse_manifest_directory(QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attributes = reader.attributes();
-    PatchDirectory directory(attributes.value("name").toString());
+    ManifestDirectory directory(attributes.value("name").toString());
 
     reader.readNext();
 
     while(reader.name() != "directory") {
-        directory.add_file(this->parse_file(reader));
+        directory.add_file(this->parse_manifest_file(reader));
     }
 
     return directory;
 }
 
-PatchFile Patcher::parse_file(QXmlStreamReader &reader)
+ManifestFile Updater::parse_manifest_file(QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attributes = reader.attributes();
-    PatchFile file(attributes.value("name").toString(), 0, "");
+    ManifestFile file(attributes.value("name").toString(), 0, "");
 
     do {
         if(reader.readNext() != QXmlStreamReader::StartElement) {
@@ -137,11 +150,11 @@ PatchFile Patcher::parse_file(QXmlStreamReader &reader)
         QString name = reader.name().toString();
         if(name == "size") {
             if(reader.readNext() == QXmlStreamReader::Characters) {
-                file.set_size(reader.text().toULong());
+                file.set_size(reader.text().toLongLong());
             }
         } else if(name == "hash") {
             if(reader.readNext() == QXmlStreamReader::Characters) {
-                file.set_hash(reader.text().toString());
+                file.set_hash(reader.text().toUtf8().toHex());
             }
         }
     } while(reader.name() != "file");
@@ -149,34 +162,4 @@ PatchFile Patcher::parse_file(QXmlStreamReader &reader)
     reader.readNext();
 
     return file;
-}
-
-void Patcher::add_directory(PatchDirectory directory)
-{
-    m_directories.push_back(directory);
-}
-
-std::vector<PatchDirectory> Patcher::get_directories()
-{
-    return m_directories;
-}
-
-QString Patcher::get_launcher_version()
-{
-    return m_launcher_version;
-}
-
-QString Patcher::get_account_server()
-{
-    return m_account_server;
-}
-
-QString Patcher::get_client_agent()
-{
-    return m_client_agent;
-}
-
-QString Patcher::get_server_version()
-{
-    return m_server_version;
 }

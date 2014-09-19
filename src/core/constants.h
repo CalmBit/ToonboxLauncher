@@ -7,6 +7,7 @@ const QString DISTRIBUTION = "test";
 const QString PLATFORM = "win32";
 const QString DISTRIBUTION_TOKEN = "test/win32";
 const QString USER_AGENT = "TTI-Launcher/1.0.3 (test/win32)";
+const QString MANIFEST_FILENAME = "patcher.xml";
 
 const QString URL_REPORT_A_BUG = "https://launchpad.net/toontowninfinite";
 const QString URL_HOME_PAGE = "https://toontowninfinite.com";
