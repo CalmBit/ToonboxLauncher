@@ -28,6 +28,7 @@
 #include <QFile>
 #include <QIODevice>
 #include <QtGlobal>
+#include <QtConcurrent>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version(""),
@@ -263,7 +264,12 @@ void Updater::update_files()
             QString relative_path = file_queue.front();
             QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
             this->download_file(DISTRIBUTION_TOKEN, archive_path);
-            this->extract_file(archive_path, relative_path);
+
+            QObject::connect(this, SIGNAL(extract_finished()),
+                             &m_update_loop, SLOT(quit()));
+            QtConcurrent::run(this, &Updater::extract_file, archive_path, relative_path);
+            m_update_loop.exec();
+
             file_queue.pop();
             m_update_file_number++;
         } catch(...) {
@@ -336,7 +342,7 @@ void Updater::download_progress(qint64 bytes_read, qint64 bytes_total)
 
     // Round:
     read = floor((read*10.0) + 0.5) / 10.0;
-    total = floor((total*10.0) + 0.05) / 10.0;
+    total = floor((total*10.0) + 0.5) / 10.0;
 
     // Calculate the download speed:
     double speed = (bytes_read*1000.0) / m_download_time.elapsed();
@@ -390,4 +396,6 @@ void Updater::extract_file(QString archive_path, QString output_path)
 
     archive_file.close();
     QFile::remove(archive_path);
+
+    emit extract_finished();
 }

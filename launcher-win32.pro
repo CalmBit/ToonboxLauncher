@@ -1,4 +1,4 @@
-QT += core gui widgets network
+QT += core gui widgets network concurrent
 TARGET = launcher
 TEMPLATE = app
 CONFIG += c++11

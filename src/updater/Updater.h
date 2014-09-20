@@ -47,6 +47,7 @@ class Updater : public QObject
   signals:
     void download_progressed(qint64 bytes_read, qint64 bytes_total, QString status);
     void download_error(int error_code, QString reason);
+    void extract_finished();
 
   private slots:
     void download_ready_read();
