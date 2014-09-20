@@ -10,6 +10,7 @@
 #include <QUrl>
 #include <QString>
 #include <QtGlobal>
+#include <QEventLoop>
 #include <QTime>
 #include <QNetworkReply>
 #include <QFile>
@@ -22,6 +23,7 @@ class Updater : public QObject
 
   public:
     Updater(QUrl url);
+    ~Updater();
 
     void set_url(QUrl url);
     QUrl get_url();
@@ -33,17 +35,18 @@ class Updater : public QObject
 
     std::vector<ManifestDirectory> get_directories();
 
-    int get_download_total_files();
-    int get_download_file_number();
+    int get_update_file_total();
+    int get_update_file_number();
 
     void update_manifest(QString distribution_token,
                          QString filename = MANIFEST_FILENAME);
     void update_files();
     void download_file(QString distribution_token, QString filepath);
-    void extract_file(QString archive_path, QString extract_path);
+    void extract_file(QString archive_path, QString output_path);
 
   signals:
-    void download_status(qint64 bytes_read, qint64 bytes_total, QString status);
+    void download_progressed(qint64 bytes_read, qint64 bytes_total, QString status);
+    void download_error(int error_code, QString reason);
 
   private slots:
     void download_ready_read();
@@ -59,8 +62,9 @@ class Updater : public QObject
 
     std::vector<ManifestDirectory> m_directories;
 
-    int m_download_total_files;
-    int m_download_file_number;
+    QEventLoop m_update_loop;
+    int m_update_file_total;
+    int m_update_file_number;
     QTime m_download_time;
     QNetworkReply *m_download_reply;
     QFile *m_download_output;

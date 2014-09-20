@@ -26,8 +26,7 @@
 
 LauncherWindow::LauncherWindow(QWidget *parent) : DraggableWindow(parent),
     m_ui(new Ui::Launcher), m_authenticator(new Authenticator(URL_LOGIN_ENDPOINT)),
-    m_updater(new Updater(URL_DOWNLOAD_SERVER)), m_download_total_files(0),
-    m_download_file_number(0)
+    m_updater(new Updater(URL_DOWNLOAD_SERVER)), m_update_finished(false)
 {
     m_ui->setupUi(this);
 
@@ -101,8 +100,9 @@ void LauncherWindow::login()
         DISTRIBUTION);
     if(!login_reply.success) {
         // Update the status label with our error response:
-        m_ui->label_status->setText(QString::number(login_reply.error_code) + ": " +
-                                    login_reply.response);
+        m_ui->label_status->setText(
+            QString::number(login_reply.error_code) + ": " +
+            login_reply.response);
 
         // Re-enable the launcher's login, and content packs functionality:
         m_ui->push_button_play->setEnabled(true);
@@ -117,27 +117,38 @@ void LauncherWindow::login()
     }
 
     // Alright, the login was a success. Begin the update process:
-    QObject::connect(m_updater, SIGNAL(download_status(qint64, qint64, QString)),
-                     this, SLOT(download_status(qint64, qint64, QString)));
+    m_update_finished = true;
+    QObject::connect(m_updater, SIGNAL(download_progressed(qint64, qint64, QString)),
+                     this, SLOT(download_progressed(qint64, qint64, QString)));
+    QObject::connect(m_updater, SIGNAL(download_error(int, QString)),
+                     this, SLOT(download_error(int, QString)));
     m_updater->update_files();
 
-    // Everything is up to date. Launch the game:
-    this->launch_game();
+    // If everything is up to date, launch the game:
+    if(m_update_finished) {
+        this->launch_game();
+    }
 }
 
 void LauncherWindow::launch_game()
 {
+    // TODO: Launch the FUCKING game.
 }
 
-void LauncherWindow::download_status(qint64 bytes_read, qint64 bytes_total,
-                                     QString status)
+void LauncherWindow::download_progressed(qint64 bytes_read, qint64 bytes_total, QString status)
 {
     m_ui->label_status->setText(
         GUI_DOWNLOAD_WAITING.arg(
-            QString::number(m_updater->get_download_file_number()),
-            QString::number(m_updater->get_download_total_files()), status));
+            QString::number(m_updater->get_update_file_number()),
+            QString::number(m_updater->get_update_file_total()), status));
     m_ui->progress_bar->setMaximum(bytes_total);
     m_ui->progress_bar->setValue(bytes_read);
+}
+
+void LauncherWindow::download_error(int error_code, QString reason)
+{
+    m_update_finished = false;
+    m_ui->label_status->setText(QString::number(error_code) + ": " + reason);
 }
 
 void LauncherWindow::on_push_button_close_clicked()

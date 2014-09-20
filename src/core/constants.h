@@ -16,3 +16,4 @@ const QString URL_LOGIN_ENDPOINT = "https://toontowninfinite.com/api/login/";
 
 const int ERROR_CODE_NO_CONNECTION = 900;
 const int ERROR_CODE_INVALID_RESPONSE = 901;
+const int ERROR_CODE_UPDATING = 902;

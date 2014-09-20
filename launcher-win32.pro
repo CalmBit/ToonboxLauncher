@@ -2,7 +2,10 @@ QT += core gui widgets network
 TARGET = launcher
 TEMPLATE = app
 CONFIG += c++11
-INCLUDEPATH += src
+INCLUDEPATH += src $$(BOOST_ROOT)
+
+LIBS += $$(BOOST_ROOT)/stage/lib/libboost_iostreams-mgw48-mt-1_56.a
+LIBS += $$(BOOST_ROOT)/stage/lib/libboost_bzip2-mgw48-mt-1_56.a
 
 SOURCES += \
     src/core/main.cpp \
