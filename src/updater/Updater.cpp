@@ -3,6 +3,7 @@
 #include "ManifestFile.h"
 
 #include <vector>
+#include <queue>
 #include <cmath>
 
 #include <QUrl>
@@ -15,12 +16,14 @@
 #include <QByteArray>
 #include <QXmlStreamReader>
 #include <QXmlStreamAttributes>
+#include <QDir>
 #include <QFile>
 #include <QIODevice>
 #include <QtGlobal>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
-    m_account_server(""), m_client_agent(""), m_server_version("")
+    m_account_server(""), m_client_agent(""), m_server_version(""),
+    m_download_total_files(0), m_download_file_number(0)
 {
 }
 
@@ -57,6 +60,16 @@ QString Updater::get_server_version()
 std::vector<ManifestDirectory> Updater::get_directories()
 {
     return m_directories;
+}
+
+int Updater::get_download_total_files()
+{
+    return m_download_total_files;
+}
+
+int Updater::get_download_file_number()
+{
+    return m_download_file_number;
 }
 
 void Updater::add_directory(ManifestDirectory directory)
@@ -168,11 +181,74 @@ ManifestFile Updater::parse_manifest_file(QXmlStreamReader &reader)
     return file;
 }
 
-void Updater::download_file(QString distribution_token, QString relative_path)
+void Updater::update_files()
 {
-    QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
+    // Build a queue of files to be updated:
+    std::queue<QString> file_queue;
 
-    m_download_output = new QFile(archive_path);
+    QDir directory = QDir::current();
+
+    for(auto it = m_directories.begin(); it != m_directories.end(); ++it) {
+        QString directory_name = it->get_name();
+        if(!directory_name.isEmpty()) {
+            // Create the directory if it doesn't exist:
+            if(!directory.exists(directory_name)) {
+                directory.mkdir(directory_name);
+            }
+
+            // Move into the directory:
+            directory.cd(directory_name);
+        }
+
+        std::vector<ManifestFile> files = it->get_files();
+        for(auto it2 = files.begin(); it2 != files.end(); ++it2) {
+            QString file_name = it2->get_name();
+            QString absolute_path = directory.absoluteFilePath(file_name);
+            QString relative_path = QDir::current().relativeFilePath(absolute_path);
+
+            if(!directory.exists(file_name)) {
+                file_queue.push(relative_path);
+                continue;
+            }
+
+            QFile file(absolute_path);
+            if(!file.open(QIODevice::ReadOnly)) {
+                file_queue.push(relative_path);
+                continue;
+            }
+
+            if((file.size() != it2->get_size()) ||
+               (QCryptographicHash::hash(
+                    file.readAll(), QCryptographicHash::Md5) != it2->get_hash())) {
+                file_queue.push(relative_path);
+            }
+
+            file.close();
+        }
+
+        if(!directory_name.isEmpty()) {
+            // Move out of the directory:
+            directory.cdUp();
+        }
+    }
+
+    m_download_total_files = file_queue.size();
+    m_download_file_number = 1;
+
+    while(!file_queue.empty())
+    {
+        QString relative_path = file_queue.front();
+        QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
+        this->download_file(DISTRIBUTION_TOKEN, archive_path);
+        this->extract_file(archive_path, relative_path);
+        file_queue.pop();
+        m_download_file_number++;
+    }
+}
+
+void Updater::download_file(QString distribution_token, QString filepath)
+{
+    m_download_output = new QFile(filepath);
     if(!m_download_output->open(QIODevice::WriteOnly)) {
         delete m_download_output;
         m_download_output = nullptr;
@@ -182,7 +258,7 @@ void Updater::download_file(QString distribution_token, QString relative_path)
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;
 
-    QUrl url(m_url.toString() + "/" + distribution_token + "/" + archive_path);
+    QUrl url(m_url.toString() + "/" + distribution_token + "/" + filepath);
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
     m_download_reply = network_access_manager.get(request);
@@ -258,4 +334,8 @@ void Updater::download_progress(qint64 bytes_read, qint64 bytes_total)
     emit this->download_status(bytes_read, bytes_total,
         status.arg(QString::number(read), QString::number(total), total_unit,
                    QString::number(speed), speed_unit));
+}
+
+void Updater::extract_file(QString archive_path, QString extract_path)
+{
 }

@@ -21,11 +21,11 @@ class LauncherWindow : public DraggableWindow
 
     void update_manifest();
     void login();
-    void update_files();
     void launch_game();
 
   private slots:
-    void download_status(qint64 bytes_read, qint64 bytes_total, QString status);
+    void download_status(qint64 bytes_read, qint64 bytes_total,
+                         QString status);
 
     void on_push_button_close_clicked();
     void on_push_button_minimize_clicked();

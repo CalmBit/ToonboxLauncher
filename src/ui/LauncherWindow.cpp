@@ -117,87 +117,25 @@ void LauncherWindow::login()
     }
 
     // Alright, the login was a success. Begin the update process:
-    this->update_files();
+    QObject::connect(m_updater, SIGNAL(download_status(qint64, qint64, QString)),
+                     this, SLOT(download_status(qint64, qint64, QString)));
+    m_updater->update_files();
 
     // Everything is up to date. Launch the game:
     this->launch_game();
-}
-
-void LauncherWindow::update_files()
-{
-    // Build a queue of files to be updated:
-    std::queue<QString> file_queue;
-
-    QDir directory = QDir::current();
-
-    std::vector<ManifestDirectory> directories = m_updater->get_directories();
-    for(auto it = directories.begin(); it != directories.end(); ++it) {
-        QString directory_name = it->get_name();
-        if(!directory_name.isEmpty()) {
-            // Create the directory if it doesn't exist:
-            if(!directory.exists(directory_name)) {
-                directory.mkdir(directory_name);
-            }
-
-            // Move into the directory:
-            directory.cd(directory_name);
-        }
-
-        std::vector<ManifestFile> files = it->get_files();
-        for(auto it2 = files.begin(); it2 != files.end(); ++it2) {
-            QString file_name = it2->get_name();
-            QString absolute_path = directory.absoluteFilePath(file_name);
-            QString relative_path = QDir::current().relativeFilePath(absolute_path);
-
-            if(!directory.exists(file_name)) {
-                file_queue.push(relative_path);
-                continue;
-            }
-
-            QFile file(absolute_path);
-            if(!file.open(QIODevice::ReadOnly)) {
-                file_queue.push(relative_path);
-                continue;
-            }
-
-            if((file.size() != it2->get_size()) ||
-               (QCryptographicHash::hash(
-                    file.readAll(), QCryptographicHash::Md5) != it2->get_hash())) {
-                file_queue.push(relative_path);
-            }
-
-            file.close();
-        }
-
-        if(!directory_name.isEmpty()) {
-            // Move out of the directory:
-            directory.cdUp();
-        }
-    }
-
-    m_download_total_files = file_queue.size();
-    m_download_file_number = 1;
-
-    while(!file_queue.empty())
-    {
-        QObject::connect(m_updater, SIGNAL(download_status(qint64, qint64, QString)),
-                         this, SLOT(download_status(qint64, qint64, QString)));
-        m_updater->download_file(DISTRIBUTION_TOKEN, file_queue.front());
-        file_queue.pop();
-        m_download_file_number++;
-    }
 }
 
 void LauncherWindow::launch_game()
 {
 }
 
-void LauncherWindow::download_status(qint64 bytes_read, qint64 bytes_total, QString status)
+void LauncherWindow::download_status(qint64 bytes_read, qint64 bytes_total,
+                                     QString status)
 {
-    status = GUI_DOWNLOAD_WAITING.arg(
-        QString::number(m_download_file_number),
-        QString::number(m_download_total_files), status);
-    m_ui->label_status->setText(status);
+    m_ui->label_status->setText(
+        GUI_DOWNLOAD_WAITING.arg(
+            QString::number(m_updater->get_download_file_number()),
+            QString::number(m_updater->get_download_total_files()), status));
     m_ui->progress_bar->setMaximum(bytes_total);
     m_ui->progress_bar->setValue(bytes_read);
 }
