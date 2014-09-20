@@ -8,4 +8,4 @@ const QString ERROR_INVALID_RESPONSE = "Received an invalid response from the ac
 
 const QString GUI_NO_VERSION = "N/A";
 const QString GUI_LOGIN_WAITING = "Verifying account credentials...";
-const QString GUI_DOWNLOAD_WAITING = "Updating file %1 of %2...";
+const QString GUI_DOWNLOAD_WAITING = "Updating file %1 of %2...\n%3";

@@ -4,6 +4,7 @@
 #include "updater/Updater.h"
 
 #include <QWidget>
+#include <QtGlobal>
 
 namespace Ui
 {
@@ -24,6 +25,8 @@ class LauncherWindow : public DraggableWindow
     void launch_game();
 
   private slots:
+    void download_status(qint64 bytes_read, qint64 bytes_total, QString status);
+
     void on_push_button_close_clicked();
     void on_push_button_minimize_clicked();
     void on_push_button_play_clicked();
@@ -37,4 +40,7 @@ class LauncherWindow : public DraggableWindow
     Ui::Launcher *m_ui;
     Authenticator *m_authenticator;
     Updater *m_updater;
+
+    int m_download_total_files;
+    int m_download_file_number;
 };

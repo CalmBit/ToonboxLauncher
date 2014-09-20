@@ -6,13 +6,20 @@
 
 #include <vector>
 
+#include <QObject>
 #include <QUrl>
 #include <QString>
+#include <QtGlobal>
+#include <QTime>
+#include <QNetworkReply>
+#include <QFile>
 #include <QByteArray>
 #include <QXmlStreamReader>
 
-class Updater
+class Updater : public QObject
 {
+    Q_OBJECT
+
   public:
     Updater(QUrl url);
 
@@ -28,6 +35,14 @@ class Updater
 
     void update_manifest(QString distribution_token,
                          QString filename = MANIFEST_FILENAME);
+    void download_file(QString distribution_token, QString relative_path);
+
+  signals:
+    void download_status(qint64 bytes_read, qint64 bytes_total, QString status);
+
+  private slots:
+    void download_ready_read();
+    void download_progress(qint64 bytes_read, qint64 bytes_total);
 
   private:
     QUrl m_url;
@@ -38,6 +53,10 @@ class Updater
     QString m_server_version;
 
     std::vector<ManifestDirectory> m_directories;
+
+    QTime m_download_time;
+    QNetworkReply *m_download_reply;
+    QFile *m_download_output;
 
     void add_directory(ManifestDirectory directory);
 

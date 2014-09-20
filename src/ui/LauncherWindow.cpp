@@ -21,11 +21,13 @@
 #include <QIODevice>
 #include <QByteArray>
 #include <QCryptographicHash>
+#include <QtGlobal>
 #include <QDesktopServices>
 
 LauncherWindow::LauncherWindow(QWidget *parent) : DraggableWindow(parent),
     m_ui(new Ui::Launcher), m_authenticator(new Authenticator(URL_LOGIN_ENDPOINT)),
-    m_updater(new Updater(URL_DOWNLOAD_SERVER))
+    m_updater(new Updater(URL_DOWNLOAD_SERVER)), m_download_total_files(0),
+    m_download_file_number(0)
 {
     m_ui->setupUi(this);
 
@@ -172,10 +174,32 @@ void LauncherWindow::update_files()
             directory.cdUp();
         }
     }
+
+    m_download_total_files = file_queue.size();
+    m_download_file_number = 1;
+
+    while(!file_queue.empty())
+    {
+        QObject::connect(m_updater, SIGNAL(download_status(qint64, qint64, QString)),
+                         this, SLOT(download_status(qint64, qint64, QString)));
+        m_updater->download_file(DISTRIBUTION_TOKEN, file_queue.front());
+        file_queue.pop();
+        m_download_file_number++;
+    }
 }
 
 void LauncherWindow::launch_game()
 {
+}
+
+void LauncherWindow::download_status(qint64 bytes_read, qint64 bytes_total, QString status)
+{
+    status = GUI_DOWNLOAD_WAITING.arg(
+        QString::number(m_download_file_number),
+        QString::number(m_download_total_files), status);
+    m_ui->label_status->setText(status);
+    m_ui->progress_bar->setMaximum(bytes_total);
+    m_ui->progress_bar->setValue(bytes_read);
 }
 
 void LauncherWindow::on_push_button_close_clicked()
