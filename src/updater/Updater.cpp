@@ -25,6 +25,8 @@
 #include <QFile>
 #include <QIODevice>
 #include <QCryptographicHash>
+#include <QFuture>
+#include <QtConcurrent>
 #include <QFileInfo>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
@@ -252,9 +254,14 @@ void Updater::update_files()
             break;
         }
         try {
-            this->extract_file(archive_path, output_path);
-        } catch(ExtractionError &e) {
-            emit download_error(ERROR_CODE_EXTRACTING, e.what());
+            QObject::connect(this, SIGNAL(extract_finished()),
+                             &m_event_loop, SLOT(quit()));
+            QFuture<void> future = QtConcurrent::run(
+                this, &Updater::extract_file, archive_path, output_path);
+            m_event_loop.exec();
+            future.waitForFinished();
+        } catch(ExtractionThreadError &e) {
+            emit download_error(ERROR_CODE_EXTRACTING, e.error().what());
             break;
         }
 
@@ -355,20 +362,35 @@ void Updater::extract_file(QString archive_path, QString output_path)
     FILE *f = fopen(archive_path.toStdString().c_str(), "rb");
     if(f == NULL) {
         QString filename = QFileInfo(archive_path).fileName();
-        throw ExtractionError(ERROR_READ.arg(filename).toStdString());
+        try {
+            throw ExtractionError(ERROR_READ.arg(filename).toStdString());
+        } catch(ExtractionError &e) {
+            emit this->extract_finished();
+            throw ExtractionThreadError(e);
+        }
     }
 
     int bzerror;
     BZFILE *archive_file = BZ2_bzReadOpen(&bzerror, f, 0, 0, NULL, 0);
     if(bzerror != BZ_OK) {
         QString filename = QFileInfo(archive_path).fileName();
-        throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+        try {
+            throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+        } catch(ExtractionError &e) {
+            emit this->extract_finished();
+            throw ExtractionThreadError(e);
+        }
     }
 
     FILE *output_file = fopen(output_path.toStdString().c_str(), "wb");
     if(output_file == NULL) {
         QString filename = QFileInfo(output_path).fileName();
-        throw ExtractionError(ERROR_WRITE.arg(filename).toStdString());
+        try {
+            throw ExtractionError(ERROR_WRITE.arg(filename).toStdString());
+        } catch(ExtractionError &e) {
+            emit this->extract_finished();
+            throw ExtractionThreadError(e);
+        }
     }
 
     char buffer[4096];
@@ -378,17 +400,29 @@ void Updater::extract_file(QString archive_path, QString output_path)
             size_t nwritten = fwrite(buffer, 1, nread, output_file);
             if(nwritten != (size_t)nread) {
                 QString filename = QFileInfo(archive_path).fileName();
-                throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+                try {
+                    throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+                } catch(ExtractionError &e) {
+                    emit this->extract_finished();
+                    throw ExtractionThreadError(e);
+                }
             }
         }
     }
 
     if(bzerror != BZ_STREAM_END) {
         QString filename = QFileInfo(archive_path).fileName();
-        throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+        try {
+            throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+        } catch(ExtractionError &e) {
+            emit this->extract_finished();
+            throw ExtractionThreadError(e);
+        }
     }
 
     BZ2_bzReadClose(&bzerror, archive_file);
     fclose(output_file);
     QFile::remove(archive_path);
+
+    emit this->extract_finished();
 }

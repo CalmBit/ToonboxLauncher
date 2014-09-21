@@ -22,6 +22,7 @@
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QtGlobal>
+#include <Qt>
 #include <QDesktopServices>
 
 LauncherWindow::LauncherWindow(QWidget *parent) : DraggableWindow(parent),

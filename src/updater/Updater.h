@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include <QtConcurrent>
 #include <QObject>
 #include <QUrl>
 #include <QString>
@@ -33,6 +34,32 @@ class ExtractionError : public std::runtime_error
     ExtractionError(const std::string &what) : std::runtime_error(what)
     {
     }
+};
+
+class ExtractionThreadError : public QtConcurrent::Exception
+{
+  public:
+    ExtractionThreadError(ExtractionError &error) : e(error)
+    {
+    }
+
+    void raise() const
+    {
+        throw *this;
+    }
+
+    ExtractionThreadError *clone() const
+    {
+        return new ExtractionThreadError(*this);
+    }
+
+    ExtractionError error() const
+    {
+        return e;
+    }
+
+  private:
+    ExtractionError e;
 };
 
 class Updater : public QObject
@@ -61,6 +88,7 @@ class Updater : public QObject
   signals:
     void download_progressed(qint64 bytes_read, qint64 bytes_total, QString status);
     void download_error(int error_code, QString reason);
+    void extract_finished();
 
   private slots:
     void download_ready_read();
