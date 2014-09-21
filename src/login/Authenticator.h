@@ -1,4 +1,6 @@
 #pragma once
+#include "core/constants.h"
+
 #include <QString>
 #include <QUrl>
 #include <QByteArray>
@@ -19,7 +21,7 @@ class Authenticator
     QUrl get_login_endpoint();
 
     LoginReply login(QString username, QString password,
-                     QString distribution = "dev");
+                     QString distribution = DISTRIBUTION);
 
   private:
     QUrl m_login_endpoint;

@@ -26,7 +26,7 @@
 
 LauncherWindow::LauncherWindow(QWidget *parent) : DraggableWindow(parent),
     m_ui(new Ui::Launcher), m_authenticator(new Authenticator(URL_LOGIN_ENDPOINT)),
-    m_updater(new Updater(URL_DOWNLOAD_SERVER)), m_update_finished(false)
+    m_updater(new Updater(URL_DOWNLOAD_MIRROR)), m_update_finished(false)
 {
     m_ui->setupUi(this);
 
@@ -50,7 +50,7 @@ LauncherWindow::~LauncherWindow()
 
 void LauncherWindow::update_manifest()
 {
-    m_updater->update_manifest(DISTRIBUTION_TOKEN);
+    m_updater->update_manifest();
 
     // Update the version labels:
     QString server_version = m_updater->get_server_version();
@@ -66,7 +66,7 @@ void LauncherWindow::update_manifest()
         m_ui->label_launcher_version->setText(launcher_version);
     }
 
-    // Ensure our launcher is up to date:
+    // Ensure our launcher is up to date with the latest:
     if(!launcher_version.isEmpty() && (launcher_version != VERSION)) {
         QMessageBox message_box;
         message_box.setWindowTitle(ERROR_UPDATE_LAUNCHER_TITLE);
@@ -79,8 +79,42 @@ void LauncherWindow::update_manifest()
     }
 }
 
-void LauncherWindow::login()
+void LauncherWindow::launch_game()
 {
+    // TODO: Launch the FUCKING game.
+}
+
+void LauncherWindow::download_progressed(qint64 bytes_read, qint64 bytes_total,
+                                         QString status)
+{
+    m_ui->label_status->setText(status);
+    m_ui->progress_bar->setMaximum(bytes_total);
+    m_ui->progress_bar->setValue(bytes_read);
+}
+
+void LauncherWindow::download_error(int error_code, QString reason)
+{
+    m_update_finished = false;
+    m_ui->label_status->setText(QString::number(error_code) + ": " + reason);
+}
+
+void LauncherWindow::on_push_button_close_clicked()
+{
+    this->close();
+}
+
+void LauncherWindow::on_push_button_minimize_clicked()
+{
+    this->setWindowState(Qt::WindowMinimized);
+}
+
+void LauncherWindow::on_push_button_play_clicked()
+{
+    if(m_ui->line_edit_username->text().isEmpty() &&
+       m_ui->line_edit_password->text().isEmpty()) {
+        return;
+    }
+
     // Disable the launcher's login, and content packs functionality so nothing
     // unexpected happens while we work:
     m_ui->push_button_play->setEnabled(false);
@@ -96,8 +130,8 @@ void LauncherWindow::login()
 
     // Verify the account credentials:
     LoginReply login_reply = m_authenticator->login(
-        m_ui->line_edit_username->text(), m_ui->line_edit_password->text(),
-        DISTRIBUTION);
+                m_ui->line_edit_username->text(),
+                m_ui->line_edit_password->text());
     if(!login_reply.success) {
         // Update the status label with our error response:
         m_ui->label_status->setText(
@@ -124,48 +158,9 @@ void LauncherWindow::login()
                      this, SLOT(download_error(int, QString)));
     m_updater->update_files();
 
-    // If everything is up to date, launch the game:
+    // If the update finished cleanly, launch the game:
     if(m_update_finished) {
         this->launch_game();
-    }
-}
-
-void LauncherWindow::launch_game()
-{
-    // TODO: Launch the FUCKING game.
-}
-
-void LauncherWindow::download_progressed(qint64 bytes_read, qint64 bytes_total, QString status)
-{
-    m_ui->label_status->setText(
-        GUI_DOWNLOAD_WAITING.arg(
-            QString::number(m_updater->get_update_file_number()),
-            QString::number(m_updater->get_update_file_total()), status));
-    m_ui->progress_bar->setMaximum(bytes_total);
-    m_ui->progress_bar->setValue(bytes_read);
-}
-
-void LauncherWindow::download_error(int error_code, QString reason)
-{
-    m_update_finished = false;
-    m_ui->label_status->setText(QString::number(error_code) + ": " + reason);
-}
-
-void LauncherWindow::on_push_button_close_clicked()
-{
-    this->close();
-}
-
-void LauncherWindow::on_push_button_minimize_clicked()
-{
-    this->setWindowState(Qt::WindowMinimized);
-}
-
-void LauncherWindow::on_push_button_play_clicked()
-{
-    if(!m_ui->line_edit_username->text().isEmpty() &&
-       !m_ui->line_edit_password->text().isEmpty()) {
-        this->login();
     }
 }
 
@@ -194,6 +189,6 @@ void LauncherWindow::on_line_edit_password_returnPressed()
     if(m_ui->line_edit_username->text().isEmpty()) {
         m_ui->line_edit_username->setFocus();
     } else if(m_ui->push_button_play->isEnabled()) {
-        this->login();
+        this->on_push_button_play_clicked();
     }
 }

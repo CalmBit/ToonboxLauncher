@@ -4,6 +4,8 @@
 
 #include "core/constants.h"
 
+#include <exception>
+#include <string>
 #include <vector>
 
 #include <QObject>
@@ -16,6 +18,22 @@
 #include <QFile>
 #include <QByteArray>
 #include <QXmlStreamReader>
+
+class DownloadError : public std::runtime_error
+{
+  public:
+    DownloadError(const std::string &what) : std::runtime_error(what)
+    {
+    }
+};
+
+class ExtractionError : public std::runtime_error
+{
+  public:
+    ExtractionError(const std::string &what) : std::runtime_error(what)
+    {
+    }
+};
 
 class Updater : public QObject
 {
@@ -35,19 +53,14 @@ class Updater : public QObject
 
     std::vector<ManifestDirectory> get_directories();
 
-    int get_update_file_total();
-    int get_update_file_number();
-
-    void update_manifest(QString distribution_token,
-                         QString filename = MANIFEST_FILENAME);
+    void update_manifest(QString filename = MANIFEST_FILENAME);
     void update_files();
-    void download_file(QString distribution_token, QString filepath);
+    void download_file(QString filepath);
     void extract_file(QString archive_path, QString output_path);
 
   signals:
     void download_progressed(qint64 bytes_read, qint64 bytes_total, QString status);
     void download_error(int error_code, QString reason);
-    void extract_finished();
 
   private slots:
     void download_ready_read();
@@ -63,7 +76,7 @@ class Updater : public QObject
 
     std::vector<ManifestDirectory> m_directories;
 
-    QEventLoop m_update_loop;
+    QEventLoop m_event_loop;
     int m_update_file_total;
     int m_update_file_number;
     QTime m_download_time;

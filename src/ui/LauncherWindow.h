@@ -21,7 +21,6 @@ class LauncherWindow : public DraggableWindow
     ~LauncherWindow();
 
     void update_manifest();
-    void login();
     void launch_game();
 
   private slots:

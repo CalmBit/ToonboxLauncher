@@ -7,28 +7,25 @@
 
 #include <vector>
 #include <queue>
-#include <cmath>
 #include <sstream>
-#include <fstream>
+#include <cstdio>
 
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/bzip2.hpp>
+#include <bzlib.h>
 
 #include <QUrl>
+#include <QObject>
 #include <QString>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QObject>
 #include <QByteArray>
 #include <QXmlStreamReader>
 #include <QXmlStreamAttributes>
 #include <QDir>
 #include <QFile>
 #include <QIODevice>
-#include <QtGlobal>
-#include <QtConcurrent>
+#include <QCryptographicHash>
+#include <QFileInfo>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version(""),
@@ -38,6 +35,7 @@ Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
 
 Updater::~Updater()
 {
+    m_event_loop.quit();
     if(m_download_output) {
         m_download_output->flush();
         m_download_output->close();
@@ -48,7 +46,6 @@ Updater::~Updater()
         delete m_download_reply;
         m_download_reply = nullptr;
     }
-    m_update_loop.quit();
 }
 
 void Updater::set_url(QUrl url)
@@ -86,22 +83,12 @@ std::vector<ManifestDirectory> Updater::get_directories()
     return m_directories;
 }
 
-int Updater::get_update_file_total()
-{
-    return m_update_file_total;
-}
-
-int Updater::get_update_file_number()
-{
-    return m_update_file_number;
-}
-
 void Updater::add_directory(ManifestDirectory directory)
 {
     m_directories.push_back(directory);
 }
 
-void Updater::update_manifest(QString distribution_token, QString filename)
+void Updater::update_manifest(QString filename)
 {
     // Clear the data from the previous manifest:
     m_directories.clear();
@@ -110,17 +97,16 @@ void Updater::update_manifest(QString distribution_token, QString filename)
     m_client_agent = "";
     m_server_version = "";
 
-    QNetworkAccessManager network_access_manager;
+    QNetworkAccessManager manager;
 
-    QUrl url(m_url.toString() + "/" + distribution_token + "/" + filename);
-    QNetworkRequest request(url);
+    QNetworkRequest request(QUrl(m_url.toString() + filename));
     request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
-    QNetworkReply *reply = network_access_manager.get(request);
+    QNetworkReply *reply = manager.get(request);
 
     // Pause execution until the network request is finished:
-    QObject::connect(&network_access_manager, SIGNAL(finished(QNetworkReply *)),
-                     &m_update_loop, SLOT(quit()));
-    m_update_loop.exec();
+    QObject::connect(&manager, SIGNAL(finished(QNetworkReply *)),
+                     &m_event_loop, SLOT(quit()));
+    m_event_loop.exec();
 
     if(reply->error() == QNetworkReply::NoError) {
         this->parse_manifest(reply->readAll());
@@ -256,54 +242,52 @@ void Updater::update_files()
     }
 
     m_update_file_total = file_queue.size();
-    m_update_file_number = 1;
-
-    while(!file_queue.empty())
-    {
+    for(m_update_file_number = 1; !file_queue.empty(); m_update_file_number++) {
+        QString output_path = file_queue.front();
+        QString archive_path = output_path.section(".", 0, 0) + ".bz2";
         try {
-            QString relative_path = file_queue.front();
-            QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
-            this->download_file(DISTRIBUTION_TOKEN, archive_path);
-
-            QObject::connect(this, SIGNAL(extract_finished()),
-                             &m_update_loop, SLOT(quit()));
-            QtConcurrent::run(this, &Updater::extract_file, archive_path, relative_path);
-            m_update_loop.exec();
-
-            file_queue.pop();
-            m_update_file_number++;
-        } catch(...) {
-            emit download_error(ERROR_CODE_UPDATING, ERROR_UPDATING);
+            this->download_file(archive_path);
+        } catch(DownloadError &e) {
+            emit download_error(ERROR_CODE_DOWNLOADING, e.what());
             break;
         }
+        try {
+            this->extract_file(archive_path, output_path);
+        } catch(ExtractionError &e) {
+            emit download_error(ERROR_CODE_EXTRACTING, e.what());
+            break;
+        }
+
+        file_queue.pop();
     }
 }
 
-void Updater::download_file(QString distribution_token, QString filepath)
+void Updater::download_file(QString filepath)
 {
     m_download_output = new QFile(filepath);
     if(!m_download_output->open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         delete m_download_output;
         m_download_output = nullptr;
-        return;
+
+        QString filename = QFileInfo(filepath).fileName();
+        throw DownloadError(ERROR_WRITE.arg(filename).toStdString());
     }
 
-    QNetworkAccessManager network_access_manager;
+    QNetworkAccessManager manager;
 
-    QUrl url(m_url.toString() + "/" + distribution_token + "/" + filepath);
-    QNetworkRequest request(url);
+    QNetworkRequest request(QUrl(m_url.toString() + filepath));
     request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
-    m_download_reply = network_access_manager.get(request);
+    m_download_reply = manager.get(request);
     m_download_time.start();
 
     // Pause execution until the download is finished:
     QObject::connect(m_download_reply, SIGNAL(finished()),
-                     &m_update_loop, SLOT(quit()));
+                     &m_event_loop, SLOT(quit()));
     QObject::connect(m_download_reply, SIGNAL(readyRead()),
                      this, SLOT(download_ready_read()));
     QObject::connect(m_download_reply, SIGNAL(downloadProgress(qint64, qint64)),
                      this, SLOT(download_progress(qint64, qint64)));
-    m_update_loop.exec();
+    m_event_loop.exec();
 
     m_download_output->flush();
     m_download_output->close();
@@ -322,32 +306,28 @@ void Updater::download_ready_read()
 
 void Updater::download_progress(qint64 bytes_read, qint64 bytes_total)
 {
-    QString status = "[%1/%2%3 @ %4%5]";
-
     // Choose the total unit:
     double read = bytes_read;
     double total = bytes_total;
-    QString total_unit;
+    QString unit;
     if(bytes_total < 1024) {
-        total_unit = "B";
+        unit = "B";
     } else if(bytes_total < (1024*1024)) {
         read /= 1024;
         total /= 1024;
-        total_unit = "kB";
+        unit = "kB";
     } else {
         read /= 1024 * 1024;
         total /= 1024 * 1024;
-        total_unit = "MB";
+        unit = "MB";
     }
 
-    // Round:
+    // Round the values to the nearest tenth:
     read = floor((read*10.0) + 0.5) / 10.0;
     total = floor((total*10.0) + 0.5) / 10.0;
 
-    // Calculate the download speed:
+    // Calculate the download speed, and choose the speed unit:
     double speed = (bytes_read*1000.0) / m_download_time.elapsed();
-
-    // Choose the speed unit:
     QString speed_unit;
     if(speed < 1024) {
         speed_unit = "B/s";
@@ -359,43 +339,55 @@ void Updater::download_progress(qint64 bytes_read, qint64 bytes_total)
         speed_unit = "MB/s";
     }
 
-    // Round:
+    // Round the value to the nearest tenth:
     speed = floor((speed*10.0) + 0.5) / 10.0;
 
-    // Emit the status update signal:
+    // Emit a status update signal:
     emit this->download_progressed(bytes_read, bytes_total,
-        status.arg(QString::number(read), QString::number(total), total_unit,
-                   QString::number(speed), speed_unit));
+        GUI_DOWNLOAD_WAITING.arg(
+            QString::number(m_update_file_number),
+            QString::number(m_update_file_total), QString::number(read),
+            QString::number(total), unit, QString::number(speed), speed_unit));
 }
 
 void Updater::extract_file(QString archive_path, QString output_path)
 {
-    std::ifstream archive_file(
-        archive_path.toStdString().c_str(),
-        std::ios_base::in|std::ios_base::binary);
-    if(!archive_file.is_open()) {
-        return;
+    FILE *f = fopen(archive_path.toStdString().c_str(), "rb");
+    if(f == NULL) {
+        QString filename = QFileInfo(archive_path).fileName();
+        throw ExtractionError(ERROR_READ.arg(filename).toStdString());
     }
 
-    boost::iostreams::filtering_istream istream;
-    istream.push(boost::iostreams::bzip2_decompressor());
-    istream.push(archive_file);
-
-    std::stringstream ss;
-    boost::iostreams::copy(istream, ss);
-
-    std::ofstream output_file;
-    output_file.open(
-        output_path.toStdString().c_str(),
-        std::ios_base::out|std::ios_base::binary|std::ios_base::trunc);
-    if(!output_file.is_open()) {
-        return;
+    int bzerror;
+    BZFILE *archive_file = BZ2_bzReadOpen(&bzerror, f, 0, 0, NULL, 0);
+    if(bzerror != BZ_OK) {
+        QString filename = QFileInfo(archive_path).fileName();
+        throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
     }
-    output_file << ss.rdbuf();
-    output_file.close();
 
-    archive_file.close();
-    QFile::remove(archive_path);
+    FILE *output_file = fopen(output_path.toStdString().c_str(), "wb");
+    if(output_file == NULL) {
+        QString filename = QFileInfo(output_path).fileName();
+        throw ExtractionError(ERROR_WRITE.arg(filename).toStdString());
+    }
 
-    emit extract_finished();
+    char buffer[4096];
+    while(bzerror == BZ_OK) {
+        int nread = BZ2_bzRead(&bzerror, archive_file, buffer, sizeof(buffer));
+        if((bzerror == BZ_OK) || bzerror == BZ_STREAM_END) {
+            size_t nwritten = fwrite(buffer, 1, nread, output_file);
+            if(nwritten != (size_t)nread) {
+                QString filename = QFileInfo(archive_path).fileName();
+                throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+            }
+        }
+    }
+
+    if(bzerror != BZ_STREAM_END) {
+        QString filename = QFileInfo(archive_path).fileName();
+        throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
+    }
+
+    BZ2_bzReadClose(&bzerror, archive_file);
+    fclose(output_file);
 }
