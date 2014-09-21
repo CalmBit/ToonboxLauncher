@@ -390,4 +390,5 @@ void Updater::extract_file(QString archive_path, QString output_path)
 
     BZ2_bzReadClose(&bzerror, archive_file);
     fclose(output_file);
+    QFile::remove(archive_path);
 }
