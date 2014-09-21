@@ -180,7 +180,7 @@ ManifestFile Updater::parse_manifest_file(QXmlStreamReader &reader)
             }
         } else if(name == "hash") {
             if(reader.readNext() == QXmlStreamReader::Characters) {
-                file.set_hash(reader.text().toUtf8().toHex());
+                file.set_hash(reader.text().toUtf8());
             }
         }
     } while(reader.name() != "file");
@@ -226,9 +226,9 @@ void Updater::update_files()
                 continue;
             }
 
-            if((file.size() != it2->get_size()) ||
-               (QCryptographicHash::hash(
-                    file.readAll(), QCryptographicHash::Md5) != it2->get_hash())) {
+            qint64 size = file.size();
+            QByteArray hash = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5);
+            if((size != it2->get_size()) || (hash.toHex() != it2->get_hash())) {
                 file_queue.push(relative_path);
             }
 
