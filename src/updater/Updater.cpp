@@ -90,7 +90,7 @@ void Updater::add_directory(ManifestDirectory directory)
     m_directories.push_back(directory);
 }
 
-void Updater::update_manifest(QString filename)
+void Updater::update_manifest(const QString &filename)
 {
     // Clear the data from the previous manifest:
     m_directories.clear();
@@ -117,7 +117,7 @@ void Updater::update_manifest(QString filename)
     delete reply;
 }
 
-void Updater::parse_manifest(QByteArray data)
+void Updater::parse_manifest(const QByteArray &data)
 {
     QXmlStreamReader reader(data);
 
@@ -269,10 +269,10 @@ void Updater::update_files()
     }
 }
 
-void Updater::download_file(QString filepath)
+void Updater::download_file(const QString &filepath)
 {
     m_download_output = new QFile(filepath);
-    if(!m_download_output->open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+    if(!m_download_output->open(QIODevice::WriteOnly)) {
         delete m_download_output;
         m_download_output = nullptr;
 
@@ -357,7 +357,7 @@ void Updater::download_progress(qint64 bytes_read, qint64 bytes_total)
             QString::number(total), unit, QString::number(speed), speed_unit));
 }
 
-void Updater::extract_file(QString archive_path, QString output_path)
+void Updater::extract_file(const QString &archive_path, const QString &output_path)
 {
     FILE *f = fopen(archive_path.toStdString().c_str(), "rb");
     if(f == NULL) {

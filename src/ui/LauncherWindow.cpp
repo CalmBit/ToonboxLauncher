@@ -86,14 +86,14 @@ void LauncherWindow::launch_game()
 }
 
 void LauncherWindow::download_progressed(qint64 bytes_read, qint64 bytes_total,
-                                         QString status)
+                                         const QString &status)
 {
     m_ui->label_status->setText(status);
     m_ui->progress_bar->setMaximum(bytes_total);
     m_ui->progress_bar->setValue(bytes_read);
 }
 
-void LauncherWindow::download_error(int error_code, QString reason)
+void LauncherWindow::download_error(int error_code, const QString &reason)
 {
     m_update_finished = false;
     m_ui->label_status->setText(QString::number(error_code) + ": " + reason);

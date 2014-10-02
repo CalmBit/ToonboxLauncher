@@ -29,8 +29,8 @@ QUrl Authenticator::get_login_endpoint()
     return m_login_endpoint;
 }
 
-LoginReply Authenticator::login(QString username, QString password,
-                                QString distribution)
+LoginReply Authenticator::login(const QString &username, const QString &password,
+                                const QString &distribution)
 {
     QEventLoop event_loop;
     QNetworkAccessManager network_access_manager;
@@ -65,7 +65,7 @@ LoginReply Authenticator::login(QString username, QString password,
     return login_reply;
 }
 
-LoginReply Authenticator::parse_login_reply(QByteArray data)
+LoginReply Authenticator::parse_login_reply(const QByteArray &data)
 {
     LoginReply login_reply;
     login_reply.success = false;

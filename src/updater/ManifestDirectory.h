@@ -8,9 +8,9 @@
 class ManifestDirectory
 {
   public:
-    ManifestDirectory(QString name);
+    ManifestDirectory(const QString &name);
 
-    void set_name(QString name);
+    void set_name(const QString &name);
     QString get_name();
 
     void add_directory(ManifestDirectory directory);
@@ -18,7 +18,7 @@ class ManifestDirectory
     void add_file(ManifestFile file);
     std::vector<ManifestFile> get_files();
 
-    void set_path(QString path);
+    void set_path(const QString &path);
     QString get_path();
 
   private:

@@ -5,11 +5,11 @@
 
 #include <QString>
 
-ManifestDirectory::ManifestDirectory(QString name) : m_name(name), m_path(name)
+ManifestDirectory::ManifestDirectory(const QString &name) : m_name(name), m_path(name)
 {
 }
 
-void ManifestDirectory::set_name(QString name)
+void ManifestDirectory::set_name(const QString &name)
 {
     m_name = name;
 }
@@ -41,7 +41,7 @@ std::vector<ManifestFile> ManifestDirectory::get_files()
     return m_files;
 }
 
-void ManifestDirectory::set_path(QString path)
+void ManifestDirectory::set_path(const QString &path)
 {
     m_path = path;
 }

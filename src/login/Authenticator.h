@@ -20,11 +20,11 @@ class Authenticator
     void set_login_endpoint(QUrl login_endpoint);
     QUrl get_login_endpoint();
 
-    LoginReply login(QString username, QString password,
-                     QString distribution = DISTRIBUTION);
+    LoginReply login(const QString &username, const QString &password,
+                     const QString &distribution = DISTRIBUTION);
 
   private:
     QUrl m_login_endpoint;
 
-    LoginReply parse_login_reply(QByteArray data);
+    LoginReply parse_login_reply(const QByteArray &data);
 };

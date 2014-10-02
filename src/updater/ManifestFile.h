@@ -6,16 +6,16 @@
 class ManifestFile
 {
   public:
-    ManifestFile(QString name, qint64 size, QByteArray hash);
+    ManifestFile(const QString &name, qint64 size, const QByteArray &hash);
 
-    void set_name(QString name);
+    void set_name(const QString &name);
     QString get_name();
     void set_size(qint64 size);
     qint64 get_size();
-    void set_hash(QByteArray hash);
+    void set_hash(const QByteArray &hash);
     QByteArray get_hash();
 
-    void set_path(QString path);
+    void set_path(const QString &path);
     QString get_path();
 
   private:

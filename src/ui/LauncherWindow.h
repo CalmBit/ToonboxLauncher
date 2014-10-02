@@ -24,8 +24,8 @@ class LauncherWindow : public DraggableWindow
     void launch_game();
 
   private slots:
-    void download_progressed(qint64 bytes_read, qint64 bytes_total, QString status);
-    void download_error(int error_code, QString reason);
+    void download_progressed(qint64 bytes_read, qint64 bytes_total, const QString &status);
+    void download_error(int error_code, const QString &reason);
 
     void on_push_button_close_clicked();
     void on_push_button_minimize_clicked();

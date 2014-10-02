@@ -4,12 +4,12 @@
 #include <QtGlobal>
 #include <QByteArray>
 
-ManifestFile::ManifestFile(QString name, qint64 size, QByteArray hash) :
+ManifestFile::ManifestFile(const QString &name, qint64 size, const QByteArray &hash) :
     m_name(name), m_size(size), m_hash(hash), m_path(name)
 {
 }
 
-void ManifestFile::set_name(QString name)
+void ManifestFile::set_name(const QString &name)
 {
     m_name = name;
 }
@@ -29,7 +29,7 @@ qint64 ManifestFile::get_size()
     return m_size;
 }
 
-void ManifestFile::set_hash(QByteArray hash)
+void ManifestFile::set_hash(const QByteArray &hash)
 {
     m_hash = hash;
 }
@@ -39,7 +39,7 @@ QByteArray ManifestFile::get_hash()
     return m_hash;
 }
 
-void ManifestFile::set_path(QString path)
+void ManifestFile::set_path(const QString &path)
 {
     m_path = path;
 }
