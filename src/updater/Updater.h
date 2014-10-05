@@ -82,7 +82,7 @@ class Updater : public QObject
 
     void update_manifest(const QString &filename = MANIFEST_FILENAME);
     void update_files();
-    void download_file(const QString &filepath);
+    bool download_file(const QString &filepath);
     void extract_file(const QString &archive_path, const QString &output_path);
 
   signals:

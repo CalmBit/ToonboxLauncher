@@ -248,7 +248,7 @@ void Updater::update_files()
         QString output_path = file_queue.front();
         QString archive_path = output_path.section(".", 0, 0) + ".bz2";
         try {
-            this->download_file(archive_path);
+            while(!this->download_file(archive_path));
         } catch(DownloadError &e) {
             emit download_error(ERROR_CODE_DOWNLOADING, e.what());
             break;
@@ -269,7 +269,7 @@ void Updater::update_files()
     }
 }
 
-void Updater::download_file(const QString &filepath)
+bool Updater::download_file(const QString &filepath)
 {
     m_download_output = new QFile(filepath);
     if(!m_download_output->open(QIODevice::WriteOnly)) {
@@ -296,12 +296,16 @@ void Updater::download_file(const QString &filepath)
                      this, SLOT(download_progress(qint64, qint64)));
     m_event_loop.exec();
 
+    bool success = m_download_output->size() != 0;
+
     m_download_output->flush();
     m_download_output->close();
     delete m_download_output;
     m_download_output = nullptr;
     delete m_download_reply;
     m_download_reply = nullptr;
+
+    return success;
 }
 
 void Updater::download_ready_read()
