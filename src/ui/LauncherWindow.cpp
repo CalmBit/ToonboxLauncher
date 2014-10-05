@@ -88,6 +88,8 @@ void LauncherWindow::launch_game(const QString &login_token)
     m_ui->label_status->setText(GUI_STARTING_GAME);
 
     // Start the runtime application:
+    _putenv(("TTI_PLAYCOOKIE=" + login_token).toStdString().c_str());
+    _putenv(("TTI_GAMESERVER=" + m_updater->get_client_agent()).toStdString().c_str());
     QStringList arguments;
     arguments.append("--play-token");
     arguments.append(login_token);
