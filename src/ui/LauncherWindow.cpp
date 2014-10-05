@@ -15,6 +15,7 @@
 #include <QWidget>
 #include <Qt>
 #include <QString>
+#include <QStringList>
 #include <QMessageBox>
 #include <QDir>
 #include <QFile>
@@ -24,6 +25,7 @@
 #include <QtGlobal>
 #include <Qt>
 #include <QDesktopServices>
+#include <QProcess>
 
 LauncherWindow::LauncherWindow(QWidget *parent) : DraggableWindow(parent),
     m_ui(new Ui::Launcher), m_authenticator(new Authenticator(URL_LOGIN_ENDPOINT)),
@@ -80,9 +82,20 @@ void LauncherWindow::update_manifest()
     }
 }
 
-void LauncherWindow::launch_game()
+void LauncherWindow::launch_game(const QString &login_token)
 {
-    // TODO: Launch the FUCKING game.
+    // Let the user know we're starting up:
+    m_ui->label_status->setText(GUI_STARTING_GAME);
+
+    // Start the runtime application:
+    QStringList arguments;
+    arguments.append("--play-token");
+    arguments.append(login_token);
+    arguments.append(m_updater->get_client_agent());
+    QProcess::startDetached("infinite.exe", arguments);
+
+    // We've served our purpose. Have fun!
+    this->close();
 }
 
 void LauncherWindow::download_progressed(qint64 bytes_read, qint64 bytes_total,
@@ -161,7 +174,7 @@ void LauncherWindow::on_push_button_play_clicked()
 
     // If the update finished cleanly, launch the game:
     if(m_update_finished) {
-        this->launch_game();
+        this->launch_game(login_reply.response);
     }
 }
 

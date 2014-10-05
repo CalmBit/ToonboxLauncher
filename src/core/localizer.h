@@ -12,3 +12,4 @@ const QString ERROR_DECOMPRESS = "Couldn't decompress archive: %1";
 const QString GUI_NO_VERSION = "N/A";
 const QString GUI_LOGIN_WAITING = "Verifying account credentials...";
 const QString GUI_DOWNLOAD_WAITING = "Updating file %1 of %2...\n[%3/%4%5 @ %6%7]";
+const QString GUI_STARTING_GAME = "Starting the game...";

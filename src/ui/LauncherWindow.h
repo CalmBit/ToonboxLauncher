@@ -21,7 +21,7 @@ class LauncherWindow : public DraggableWindow
     ~LauncherWindow();
 
     void update_manifest();
-    void launch_game();
+    void launch_game(const QString &login_token);
 
   private slots:
     void download_progressed(qint64 bytes_read, qint64 bytes_total, const QString &status);
