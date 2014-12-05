@@ -29,7 +29,7 @@
 
 LauncherWindow::LauncherWindow(QWidget *parent) : DraggableWindow(parent),
     m_ui(new Ui::Launcher), m_authenticator(new Authenticator(URL_LOGIN_ENDPOINT)),
-    m_updater(new Updater(URL_DOWNLOAD_MIRROR)), m_update_finished(false)
+    m_updater(new Updater(URL_DOWNLOAD_MIRROR))
 {
     m_ui->setupUi(this);
 
@@ -69,11 +69,11 @@ void LauncherWindow::update_manifest()
         m_ui->label_launcher_version->setText(launcher_version);
     }
 
-    // Ensure our launcher is up to date with the latest:
+    // Ensure our launcher is at the latest version:
     if(!launcher_version.isEmpty() && (launcher_version != VERSION)) {
         QMessageBox message_box;
-        message_box.setWindowTitle(ERROR_UPDATE_LAUNCHER_TITLE);
-        message_box.setText(ERROR_UPDATE_LAUNCHER_TEXT);
+        message_box.setWindowTitle(ERROR_OUT_OF_DATE_TITLE);
+        message_box.setText(ERROR_OUT_OF_DATE_TEXT);
         message_box.setIcon(QMessageBox::Critical);
         message_box.setStandardButtons(QMessageBox::Cancel);
         message_box.exec();
@@ -87,9 +87,11 @@ void LauncherWindow::launch_game(const QString &login_token)
     // Let the user know we're starting up:
     m_ui->label_status->setText(GUI_STARTING_GAME);
 
-    // Start the runtime application:
+    // Set the necessary environment variables:
     _putenv(("TTI_PLAYCOOKIE=" + login_token).toStdString().c_str());
     _putenv(("TTI_GAMESERVER=" + m_updater->get_client_agent()).toStdString().c_str());
+
+    // Start the runtime application:
     QStringList arguments;
     arguments.append("--play-token");
     arguments.append(login_token);
@@ -98,20 +100,6 @@ void LauncherWindow::launch_game(const QString &login_token)
 
     // We've served our purpose. Have fun!
     this->close();
-}
-
-void LauncherWindow::download_progressed(qint64 bytes_read, qint64 bytes_total,
-                                         const QString &status)
-{
-    m_ui->label_status->setText(status);
-    m_ui->progress_bar->setMaximum(bytes_total);
-    m_ui->progress_bar->setValue(bytes_read);
-}
-
-void LauncherWindow::download_error(int error_code, const QString &reason)
-{
-    m_update_finished = false;
-    m_ui->label_status->setText(QString::number(error_code) + ": " + reason);
 }
 
 void LauncherWindow::on_push_button_close_clicked()
@@ -131,8 +119,8 @@ void LauncherWindow::on_push_button_play_clicked()
         return;
     }
 
-    // Disable the launcher's login, and content packs functionality so nothing
-    // unexpected happens while we work:
+    // Disable the launcher's login, and content packs functionality so that
+    // nothing unexpected happens while we work:
     m_ui->push_button_play->setEnabled(false);
     m_ui->line_edit_username->setEnabled(false);
     m_ui->line_edit_password->setEnabled(false);
@@ -167,17 +155,7 @@ void LauncherWindow::on_push_button_play_clicked()
     }
 
     // Alright, the login was a success. Begin the update process:
-    m_update_finished = true;
-    QObject::connect(m_updater, SIGNAL(download_progressed(qint64, qint64, QString)),
-                     this, SLOT(download_progressed(qint64, qint64, QString)));
-    QObject::connect(m_updater, SIGNAL(download_error(int, QString)),
-                     this, SLOT(download_error(int, QString)));
-    m_updater->update_files();
-
-    // If the update finished cleanly, launch the game:
-    if(m_update_finished) {
-        this->launch_game(login_reply.response);
-    }
+    // TODO: Update the game's files.
 }
 
 void LauncherWindow::on_push_button_report_a_bug_clicked()

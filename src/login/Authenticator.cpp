@@ -19,16 +19,6 @@ Authenticator::Authenticator(QUrl login_endpoint) :
 {
 }
 
-void Authenticator::set_login_endpoint(QUrl login_endpoint)
-{
-    m_login_endpoint = login_endpoint;
-}
-
-QUrl Authenticator::get_login_endpoint()
-{
-    return m_login_endpoint;
-}
-
 LoginReply Authenticator::login(const QString &username, const QString &password,
                                 const QString &distribution)
 {

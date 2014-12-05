@@ -13,8 +13,8 @@ class DraggableWindow : public QMainWindow
 
   protected:
     void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
   private:
     bool m_captured;

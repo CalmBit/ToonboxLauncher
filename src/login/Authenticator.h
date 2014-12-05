@@ -17,9 +17,6 @@ class Authenticator
   public:
     Authenticator(QUrl login_endpoint);
 
-    void set_login_endpoint(QUrl login_endpoint);
-    QUrl get_login_endpoint();
-
     LoginReply login(const QString &username, const QString &password,
                      const QString &distribution = DISTRIBUTION);
 
