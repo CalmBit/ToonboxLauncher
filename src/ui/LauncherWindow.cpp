@@ -82,9 +82,12 @@ void LauncherWindow::update_manifest()
     }
 }
 
+void LauncherWindow::update_game() {
+}
+
 void LauncherWindow::launch_game(const QString &login_token)
 {
-    // Let the user know we're starting up:
+    // Let the user know we're starting the game up:
     m_ui->label_status->setText(GUI_STARTING_GAME);
 
     // Set the necessary environment variables:
@@ -140,7 +143,7 @@ void LauncherWindow::on_push_button_play_clicked()
         // Update the status label with our error response:
         m_ui->label_status->setText(
             QString::number(login_reply.error_code) + ": " +
-            login_reply.response);
+            login_reply.data);
 
         // Re-enable the launcher's login, and content packs functionality:
         m_ui->push_button_play->setEnabled(true);

@@ -20,6 +20,7 @@ class LauncherWindow : public DraggableWindow
     ~LauncherWindow();
 
     void update_manifest();
+    void update_game();
     void launch_game(const QString &login_token);
 
   private slots:

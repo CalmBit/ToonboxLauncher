@@ -20,58 +20,12 @@
 #include <QByteArray>
 #include <QXmlStreamReader>
 
-class DownloadError : public std::runtime_error
-{
-  public:
-    DownloadError(const std::string &what) : std::runtime_error(what)
-    {
-    }
-};
-
-class ExtractionError : public std::runtime_error
-{
-  public:
-    ExtractionError(const std::string &what) : std::runtime_error(what)
-    {
-    }
-};
-
-class ExtractionThreadError : public QtConcurrent::Exception
-{
-  public:
-    ExtractionThreadError(ExtractionError &error) : e(error)
-    {
-    }
-
-    void raise() const
-    {
-        throw *this;
-    }
-
-    ExtractionThreadError *clone() const
-    {
-        return new ExtractionThreadError(*this);
-    }
-
-    ExtractionError error() const
-    {
-        return e;
-    }
-
-  private:
-    ExtractionError e;
-};
-
 class Updater : public QObject
 {
     Q_OBJECT
 
   public:
     Updater(QUrl url);
-    ~Updater();
-
-    void set_url(QUrl url);
-    QUrl get_url();
 
     QString get_launcher_version();
     QString get_account_server();
@@ -81,18 +35,6 @@ class Updater : public QObject
     std::vector<ManifestDirectory> get_directories();
 
     void update_manifest(const QString &filename = MANIFEST_FILENAME);
-    void update_files();
-    bool download_file(const QString &filepath);
-    void extract_file(const QString &archive_path, const QString &output_path);
-
-  signals:
-    void download_progressed(qint64 bytes_read, qint64 bytes_total, const QString &status);
-    void download_error(int error_code, const QString &reason);
-    void extract_finished();
-
-  private slots:
-    void download_ready_read();
-    void download_progress(qint64 bytes_read, qint64 bytes_total);
 
   private:
     QUrl m_url;
@@ -104,16 +46,9 @@ class Updater : public QObject
 
     std::vector<ManifestDirectory> m_directories;
 
-    QEventLoop m_event_loop;
-    int m_update_file_total;
-    int m_update_file_number;
-    QTime m_download_time;
-    QNetworkReply *m_download_reply;
-    QFile *m_download_output;
-
     void add_directory(ManifestDirectory directory);
 
-    void parse_manifest(const QByteArray &data);
+    void parse_manifest_data(const QByteArray &data);
     ManifestDirectory parse_manifest_directory(QXmlStreamReader &reader);
     ManifestFile parse_manifest_file(QXmlStreamReader &reader);
 };

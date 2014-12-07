@@ -5,49 +5,46 @@
 
 #include <QUrl>
 #include <QString>
-#include <QEventLoop>
-#include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QByteArray>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QEventLoop>
 #include <QObject>
 #include <QJsonDocument>
 #include <QJsonObject>
 
-Authenticator::Authenticator(QUrl login_endpoint) :
-    m_login_endpoint(login_endpoint)
+Authenticator::Authenticator(QUrl login_endpoint) : m_login_endpoint(login_endpoint)
 {
 }
 
 LoginReply Authenticator::login(const QString &username, const QString &password,
                                 const QString &distribution)
 {
-    QEventLoop event_loop;
-    QNetworkAccessManager network_access_manager;
-
     QNetworkRequest request(m_login_endpoint);
     request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
-    request.setHeader(QNetworkRequest::ContentTypeHeader,
-                      "application/x-www-form-urlencoded");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     QByteArray parameters;
     parameters.append("n=" + username);
     parameters.append("&p=" + password);
     parameters.append("&dist=" + distribution);
-    QNetworkReply *reply = network_access_manager.post(request, parameters);
+    QNetworkAccessManager access_manager;
+    QNetworkReply *reply = access_manager.post(request, parameters);
 
-    // Pause execution until the network request is finished:
-    QObject::connect(&network_access_manager, SIGNAL(finished(QNetworkReply *)),
+    // Block until the network request is finished:
+    QEventLoop event_loop;
+    QObject::connect(&access_manager, SIGNAL(finished(QNetworkReply *)),
                      &event_loop, SLOT(quit()));
     event_loop.exec();
 
     LoginReply login_reply;
-    login_reply.success = false;
 
     if(reply->error() == QNetworkReply::NoError) {
         login_reply = this->parse_login_reply(reply->readAll());
     } else {
+        login_reply.success = false;
         login_reply.error_code = ERROR_CODE_NO_CONNECTION;
-        login_reply.response = ERROR_NO_CONNECTION;
+        login_reply.data = ERROR_NO_CONNECTION;
     }
 
     delete reply;
@@ -60,7 +57,7 @@ LoginReply Authenticator::parse_login_reply(const QByteArray &data)
     LoginReply login_reply;
     login_reply.success = false;
     login_reply.error_code = ERROR_CODE_INVALID_RESPONSE;
-    login_reply.response = ERROR_INVALID_RESPONSE;
+    login_reply.data = ERROR_INVALID_RESPONSE;
 
     QJsonDocument document = QJsonDocument::fromJson(data);
     QJsonObject object = document.object();
@@ -78,9 +75,9 @@ LoginReply Authenticator::parse_login_reply(const QByteArray &data)
     }
 
     if(login_reply.success && object.contains("token")) {
-        login_reply.response = object["token"].toString();
+        login_reply.data = object["token"].toString();
     } else if(!login_reply.success && object.contains("reason")) {
-        login_reply.response = object["reason"].toString();
+        login_reply.data = object["reason"].toString();
     }
 
     return login_reply;

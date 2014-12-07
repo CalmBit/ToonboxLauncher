@@ -30,34 +30,8 @@
 #include <QFileInfo>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
-    m_account_server(""), m_client_agent(""), m_server_version(""),
-    m_update_file_total(0), m_update_file_number(0)
+    m_account_server(""), m_client_agent(""), m_server_version("")
 {
-}
-
-Updater::~Updater()
-{
-    m_event_loop.quit();
-    if(m_download_output) {
-        m_download_output->flush();
-        m_download_output->close();
-        delete m_download_output;
-        m_download_output = nullptr;
-    }
-    if(m_download_reply) {
-        delete m_download_reply;
-        m_download_reply = nullptr;
-    }
-}
-
-void Updater::set_url(QUrl url)
-{
-    m_url = url;
-}
-
-QUrl Updater::get_url()
-{
-    return m_url;
 }
 
 QString Updater::get_launcher_version()
@@ -94,30 +68,30 @@ void Updater::update_manifest(const QString &filename)
 {
     // Clear the data from the previous manifest:
     m_directories.clear();
-    m_launcher_version = "";
-    m_account_server = "";
-    m_client_agent = "";
     m_server_version = "";
-
-    QNetworkAccessManager manager;
+    m_client_agent = "";
+    m_account_server = "";
+    m_launcher_version = "";
 
     QNetworkRequest request(QUrl(m_url.toString() + filename));
     request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
-    QNetworkReply *reply = manager.get(request);
+    QNetworkAccessManager access_manager;
+    QNetworkReply *reply = access_manager.get(request);
 
-    // Pause execution until the network request is finished:
-    QObject::connect(&manager, SIGNAL(finished(QNetworkReply *)),
-                     &m_event_loop, SLOT(quit()));
-    m_event_loop.exec();
+    // Block until the network request is finished:
+    QEventLoop event_loop;
+    QObject::connect(&access_manager, SIGNAL(finished(QNetworkReply *)),
+                     &event_loop, SLOT(quit()));
+    event_loop.exec();
 
     if(reply->error() == QNetworkReply::NoError) {
-        this->parse_manifest(reply->readAll());
+        this->parse_manifest_data(reply->readAll());
     }
 
     delete reply;
 }
 
-void Updater::parse_manifest(const QByteArray &data)
+void Updater::parse_manifest_data(const QByteArray &data)
 {
     QXmlStreamReader reader(data);
 
@@ -190,244 +164,4 @@ ManifestFile Updater::parse_manifest_file(QXmlStreamReader &reader)
     reader.readNext();
 
     return file;
-}
-
-void Updater::update_files()
-{
-    // Build a queue of files to be updated:
-    std::queue<QString> file_queue;
-
-    QDir directory = QDir::current();
-
-    for(auto it = m_directories.begin(); it != m_directories.end(); ++it) {
-        QString directory_name = it->get_name();
-        if(!directory_name.isEmpty()) {
-            // Create the directory if it doesn't exist:
-            if(!directory.exists(directory_name)) {
-                directory.mkdir(directory_name);
-            }
-
-            // Move into the directory:
-            directory.cd(directory_name);
-        }
-
-        std::vector<ManifestFile> files = it->get_files();
-        for(auto it2 = files.begin(); it2 != files.end(); ++it2) {
-            QString file_name = it2->get_name();
-            QString absolute_path = directory.absoluteFilePath(file_name);
-            QString relative_path = QDir::current().relativeFilePath(absolute_path);
-
-            if(!directory.exists(file_name)) {
-                file_queue.push(relative_path);
-                continue;
-            }
-
-            QFile file(absolute_path);
-            if(!file.open(QIODevice::ReadOnly)) {
-                file_queue.push(relative_path);
-                continue;
-            }
-
-            qint64 size = file.size();
-            QByteArray hash = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5);
-            if((size != it2->get_size()) || (hash.toHex() != it2->get_hash())) {
-                file_queue.push(relative_path);
-            }
-
-            file.close();
-        }
-
-        if(!directory_name.isEmpty()) {
-            // Move out of the directory:
-            directory.cdUp();
-        }
-    }
-
-    m_update_file_total = file_queue.size();
-    for(m_update_file_number = 1; !file_queue.empty(); m_update_file_number++) {
-        QString output_path = file_queue.front();
-        QString archive_path = output_path.section(".", 0, 0) + ".bz2";
-        try {
-            while(!this->download_file(archive_path));
-        } catch(DownloadError &e) {
-            emit download_error(ERROR_CODE_DOWNLOADING, e.what());
-            break;
-        }
-        try {
-            QObject::connect(this, SIGNAL(extract_finished()),
-                             &m_event_loop, SLOT(quit()));
-            QFuture<void> future = QtConcurrent::run(
-                this, &Updater::extract_file, archive_path, output_path);
-            m_event_loop.exec();
-            future.waitForFinished();
-        } catch(ExtractionThreadError &e) {
-            emit download_error(ERROR_CODE_EXTRACTING, e.error().what());
-            break;
-        }
-
-        file_queue.pop();
-    }
-}
-
-bool Updater::download_file(const QString &filepath)
-{
-    m_download_output = new QFile(filepath);
-    if(!m_download_output->open(QIODevice::WriteOnly)) {
-        delete m_download_output;
-        m_download_output = nullptr;
-
-        QString filename = QFileInfo(filepath).fileName();
-        throw DownloadError(ERROR_WRITE.arg(filename).toStdString());
-    }
-
-    QNetworkAccessManager manager;
-
-    QNetworkRequest request(QUrl(m_url.toString() + filepath));
-    request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
-    m_download_reply = manager.get(request);
-    m_download_time.start();
-
-    // Pause execution until the download is finished:
-    QObject::connect(m_download_reply, SIGNAL(finished()),
-                     &m_event_loop, SLOT(quit()));
-    QObject::connect(m_download_reply, SIGNAL(readyRead()),
-                     this, SLOT(download_ready_read()));
-    QObject::connect(m_download_reply, SIGNAL(downloadProgress(qint64, qint64)),
-                     this, SLOT(download_progress(qint64, qint64)));
-    m_event_loop.exec();
-
-    bool success = m_download_output->size() != 0;
-
-    m_download_output->flush();
-    m_download_output->close();
-    delete m_download_output;
-    m_download_output = nullptr;
-    delete m_download_reply;
-    m_download_reply = nullptr;
-
-    return success;
-}
-
-void Updater::download_ready_read()
-{
-    if(m_download_output) {
-        m_download_output->write(m_download_reply->readAll());
-    }
-}
-
-void Updater::download_progress(qint64 bytes_read, qint64 bytes_total)
-{
-    // Choose the total unit:
-    double read = bytes_read;
-    double total = bytes_total;
-    QString unit;
-    if(bytes_total < 1024) {
-        unit = "B";
-    } else if(bytes_total < (1024*1024)) {
-        read /= 1024;
-        total /= 1024;
-        unit = "kB";
-    } else {
-        read /= 1024 * 1024;
-        total /= 1024 * 1024;
-        unit = "MB";
-    }
-
-    // Round the values to the nearest tenth:
-    read = floor((read*10.0) + 0.5) / 10.0;
-    total = floor((total*10.0) + 0.5) / 10.0;
-
-    // Calculate the download speed, and choose the speed unit:
-    double speed = (bytes_read*1000.0) / m_download_time.elapsed();
-    QString speed_unit;
-    if(speed < 1024) {
-        speed_unit = "B/s";
-    } else if(speed < (1024*1024)) {
-        speed /= 1024;
-        speed_unit = "kB/s";
-    } else {
-        speed /= 1024 * 1024;
-        speed_unit = "MB/s";
-    }
-
-    // Round the value to the nearest tenth:
-    speed = floor((speed*10.0) + 0.5) / 10.0;
-
-    // Emit a status update signal:
-    emit this->download_progressed(bytes_read, bytes_total,
-        GUI_DOWNLOAD_WAITING.arg(
-            QString::number(m_update_file_number),
-            QString::number(m_update_file_total), QString::number(read),
-            QString::number(total), unit, QString::number(speed), speed_unit));
-}
-
-void Updater::extract_file(const QString &archive_path, const QString &output_path)
-{
-    FILE *f = fopen(archive_path.toStdString().c_str(), "rb");
-    if(f == NULL) {
-        QString filename = QFileInfo(archive_path).fileName();
-        try {
-            throw ExtractionError(ERROR_READ.arg(filename).toStdString());
-        } catch(ExtractionError &e) {
-            emit this->extract_finished();
-            throw ExtractionThreadError(e);
-        }
-    }
-
-    int bzerror;
-    BZFILE *archive_file = BZ2_bzReadOpen(&bzerror, f, 0, 0, NULL, 0);
-    if(bzerror != BZ_OK) {
-        QString filename = QFileInfo(archive_path).fileName();
-        try {
-            throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
-        } catch(ExtractionError &e) {
-            emit this->extract_finished();
-            throw ExtractionThreadError(e);
-        }
-    }
-
-    FILE *output_file = fopen(output_path.toStdString().c_str(), "wb");
-    if(output_file == NULL) {
-        QString filename = QFileInfo(output_path).fileName();
-        try {
-            throw ExtractionError(ERROR_WRITE.arg(filename).toStdString());
-        } catch(ExtractionError &e) {
-            emit this->extract_finished();
-            throw ExtractionThreadError(e);
-        }
-    }
-
-    char buffer[4096];
-    while(bzerror == BZ_OK) {
-        int nread = BZ2_bzRead(&bzerror, archive_file, buffer, sizeof(buffer));
-        if((bzerror == BZ_OK) || bzerror == BZ_STREAM_END) {
-            size_t nwritten = fwrite(buffer, 1, nread, output_file);
-            if(nwritten != (size_t)nread) {
-                QString filename = QFileInfo(archive_path).fileName();
-                try {
-                    throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
-                } catch(ExtractionError &e) {
-                    emit this->extract_finished();
-                    throw ExtractionThreadError(e);
-                }
-            }
-        }
-    }
-
-    if(bzerror != BZ_STREAM_END) {
-        QString filename = QFileInfo(archive_path).fileName();
-        try {
-            throw ExtractionError(ERROR_DECOMPRESS.arg(filename).toStdString());
-        } catch(ExtractionError &e) {
-            emit this->extract_finished();
-            throw ExtractionThreadError(e);
-        }
-    }
-
-    BZ2_bzReadClose(&bzerror, archive_file);
-    fclose(f);
-    fclose(output_file);
-    QFile::remove(archive_path);
-
-    emit this->extract_finished();
 }

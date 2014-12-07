@@ -9,7 +9,7 @@ struct LoginReply
 {
     bool success;
     int error_code;
-    QString response;
+    QString data;
 };
 
 class Authenticator
