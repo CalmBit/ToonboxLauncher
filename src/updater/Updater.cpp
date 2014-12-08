@@ -161,7 +161,7 @@ ManifestFile Updater::parse_manifest_file(QXmlStreamReader &reader)
     return file;
 }
 
-void Updater::update()
+bool Updater::update()
 {
     // Build a queue of files that need to be updated:
     std::queue<QString> file_queue;
@@ -221,8 +221,20 @@ void Updater::update()
         QString relative_path = file_queue.front();
         QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
 
-        qDebug() << relative_path << archive_path;
+        try {
+            this->download_file(archive_path);
+        } catch(DownloadError &e) {
+            emit download_error(e.get_error_code(), e.what());
+            return false;
+        }
 
         file_queue.pop();
     }
+
+    return true;
+}
+
+void Updater::download_file(const QString &relative_path)
+{
+    throw DownloadError(100, "Not implemented.");
 }

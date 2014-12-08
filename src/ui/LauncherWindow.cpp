@@ -17,6 +17,7 @@
 #include <QString>
 #include <QStringList>
 #include <QMessageBox>
+#include <QObject>
 #include <QDir>
 #include <QFile>
 #include <QIODevice>
@@ -82,8 +83,13 @@ void LauncherWindow::update_manifest()
     }
 }
 
-void LauncherWindow::update_game() {
-    m_updater->update();
+bool LauncherWindow::update_game() {
+    // Connect the required slots:
+    QObject::connect(m_updater, SIGNAL(download_error(int, const QString &)),
+                     this, SLOT(download_error(int, const QString &)));
+
+    // Begin downloading the updated files:
+    return m_updater->update();
 }
 
 void LauncherWindow::launch_game(const QString &login_token)
@@ -159,7 +165,9 @@ void LauncherWindow::on_push_button_play_clicked()
     }
 
     // Alright, the login was a success. Begin the update process:
-    this->update_game();
+    if(!this->update_game()) {
+        return;
+    }
 }
 
 void LauncherWindow::on_push_button_report_a_bug_clicked()
@@ -189,4 +197,9 @@ void LauncherWindow::on_line_edit_password_returnPressed()
     } else if(m_ui->push_button_play->isEnabled()) {
         this->on_push_button_play_clicked();
     }
+}
+
+void LauncherWindow::download_error(int error_code, const QString &error_string)
+{
+    m_ui->label_status->setText(QString::number(error_code) + ": " + error_string);
 }

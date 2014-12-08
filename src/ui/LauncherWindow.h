@@ -20,7 +20,7 @@ class LauncherWindow : public DraggableWindow
     ~LauncherWindow();
 
     void update_manifest();
-    void update_game();
+    bool update_game();
     void launch_game(const QString &login_token);
 
   private slots:
@@ -32,6 +32,8 @@ class LauncherWindow : public DraggableWindow
 
     void on_line_edit_username_returnPressed();
     void on_line_edit_password_returnPressed();
+
+    void download_error(int error_code, const QString &error_string);
 
   private:
     Ui::Launcher *m_ui;

@@ -4,6 +4,7 @@
 
 #include "core/constants.h"
 
+#include <exception>
 #include <vector>
 #include <queue>
 #include <cstdint>
@@ -13,6 +14,23 @@
 #include <QString>
 #include <QByteArray>
 #include <QXmlStreamReader>
+
+class DownloadError : public std::runtime_error
+{
+  public:
+    DownloadError(int error_code, const QString &error_string) :
+        std::runtime_error(error_string.toStdString()), m_error_code(error_code)
+    {
+    }
+
+    int get_error_code()
+    {
+        return m_error_code;
+    }
+
+  private:
+    int m_error_code;
+};
 
 class Updater : public QObject
 {
@@ -29,7 +47,10 @@ class Updater : public QObject
     std::vector<ManifestDirectory> get_directories();
 
     void update_manifest(const QString &filename = MANIFEST_FILENAME);
-    void update();
+    bool update();
+
+  signals:
+    void download_error(int error_code, const QString &error_string);
 
   private:
     QUrl m_url;
@@ -49,4 +70,6 @@ class Updater : public QObject
     void parse_manifest_data(const QByteArray &data);
     ManifestDirectory parse_manifest_directory(QXmlStreamReader &reader);
     ManifestFile parse_manifest_file(QXmlStreamReader &reader);
+
+    void download_file(const QString &relative_path);
 };
