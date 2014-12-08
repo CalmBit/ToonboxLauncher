@@ -126,7 +126,7 @@ void LauncherWindow::on_push_button_minimize_clicked()
 
 void LauncherWindow::on_push_button_play_clicked()
 {
-    if(m_ui->line_edit_username->text().isEmpty() &&
+    if(m_ui->line_edit_username->text().isEmpty() ||
        m_ui->line_edit_password->text().isEmpty()) {
         return;
     }
