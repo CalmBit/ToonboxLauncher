@@ -3,31 +3,25 @@
 #include "ManifestFile.h"
 
 #include "core/constants.h"
-#include "core/localizer.h"
 
 #include <vector>
 #include <queue>
-#include <sstream>
-#include <cstdio>
-
-#include <bzlib.h>
 
 #include <QUrl>
 #include <QObject>
 #include <QString>
-#include <QNetworkAccessManager>
 #include <QNetworkRequest>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QEventLoop>
 #include <QByteArray>
 #include <QXmlStreamReader>
 #include <QXmlStreamAttributes>
 #include <QDir>
 #include <QFile>
 #include <QIODevice>
+#include <QtGlobal>
 #include <QCryptographicHash>
-#include <QFuture>
-#include <QtConcurrent>
-#include <QFileInfo>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version("")
@@ -164,4 +158,60 @@ ManifestFile Updater::parse_manifest_file(QXmlStreamReader &reader)
     reader.readNext();
 
     return file;
+}
+
+void Updater::update()
+{
+    // Build a queue of files that need to be updated:
+    std::queue<QString> file_queue;
+
+    QDir directory = QDir::current();
+    for(auto it = m_directories.begin(); it != m_directories.end(); ++it) {
+        QString directory_name = it->get_name();
+        if(!directory_name.isEmpty()) {
+            // Create this directory if it doesn't already exist:
+            if(!directory.exists(directory_name)) {
+                directory.mkdir(directory_name);
+            }
+
+            // Move into the directory:
+            directory.cd(directory_name);
+        }
+
+        std::vector<ManifestFile> files = it->get_files();
+        for(auto it2 = files.begin(); it2 != files.end(); ++it2) {
+            QString file_name = it2->get_name();
+            QString absolute_path = directory.absoluteFilePath(file_name);
+            QString relative_path = QDir::current().relativeFilePath(file_name);
+
+            if(!directory.exists(file_name)) {
+                file_queue.push(relative_path);
+                continue;
+            }
+
+            QFile file(absolute_path);
+            if(!file.open(QIODevice::ReadOnly)) {
+                file_queue.push(relative_path);
+                continue;
+            }
+
+            qint64 size = file.size();
+            QCryptographicHash hash(QCryptographicHash::Md5);
+            qint64 bytes_read;
+            char buffer[8192];
+            while((bytes_read = file.read(buffer, 8192)) > 0) {
+                hash.addData(buffer, bytes_read);
+            }
+            if((size != it2->get_size()) || (hash.result().toHex() != it2->get_hash())) {
+                file_queue.push(relative_path);
+            }
+
+            file.close();
+        }
+
+        if(!directory_name.isEmpty()) {
+            // Move out of the directory:
+            directory.cdUp();
+        }
+    }
 }

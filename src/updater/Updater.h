@@ -4,19 +4,12 @@
 
 #include "core/constants.h"
 
-#include <exception>
-#include <string>
 #include <vector>
+#include <queue>
 
-#include <QtConcurrent>
 #include <QObject>
 #include <QUrl>
 #include <QString>
-#include <QtGlobal>
-#include <QEventLoop>
-#include <QTime>
-#include <QNetworkReply>
-#include <QFile>
 #include <QByteArray>
 #include <QXmlStreamReader>
 
@@ -35,6 +28,7 @@ class Updater : public QObject
     std::vector<ManifestDirectory> get_directories();
 
     void update_manifest(const QString &filename = MANIFEST_FILENAME);
+    void update();
 
   private:
     QUrl m_url;

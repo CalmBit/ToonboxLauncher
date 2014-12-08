@@ -158,7 +158,7 @@ void LauncherWindow::on_push_button_play_clicked()
     }
 
     // Alright, the login was a success. Begin the update process:
-    // TODO: Update the game's files.
+    m_updater->update();
 }
 
 void LauncherWindow::on_push_button_report_a_bug_clicked()
