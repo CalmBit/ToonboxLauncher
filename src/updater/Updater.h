@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <queue>
+#include <cstdint>
 
 #include <QObject>
 #include <QUrl>
@@ -39,6 +40,9 @@ class Updater : public QObject
     QString m_server_version;
 
     std::vector<ManifestDirectory> m_directories;
+
+    size_t m_update_file_number;
+    size_t m_update_file_total;
 
     void add_directory(ManifestDirectory directory);
 

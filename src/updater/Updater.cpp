@@ -24,7 +24,8 @@
 #include <QCryptographicHash>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
-    m_account_server(""), m_client_agent(""), m_server_version("")
+    m_account_server(""), m_client_agent(""), m_server_version(""), m_update_file_number(0),
+    m_update_file_total(0)
 {
 }
 
@@ -182,7 +183,7 @@ void Updater::update()
         for(auto it2 = files.begin(); it2 != files.end(); ++it2) {
             QString file_name = it2->get_name();
             QString absolute_path = directory.absoluteFilePath(file_name);
-            QString relative_path = QDir::current().relativeFilePath(file_name);
+            QString relative_path = QDir::current().relativeFilePath(absolute_path);
 
             if(!directory.exists(file_name)) {
                 file_queue.push(relative_path);
@@ -213,5 +214,15 @@ void Updater::update()
             // Move out of the directory:
             directory.cdUp();
         }
+    }
+
+    m_update_file_total = file_queue.size();
+    for(m_update_file_number = 1; !file_queue.empty(); m_update_file_number++) {
+        QString relative_path = file_queue.front();
+        QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
+
+        qDebug() << relative_path << archive_path;
+
+        file_queue.pop();
     }
 }
