@@ -83,6 +83,7 @@ void LauncherWindow::update_manifest()
 }
 
 void LauncherWindow::update_game() {
+    m_updater->update();
 }
 
 void LauncherWindow::launch_game(const QString &login_token)
@@ -158,7 +159,7 @@ void LauncherWindow::on_push_button_play_clicked()
     }
 
     // Alright, the login was a success. Begin the update process:
-    m_updater->update();
+    this->update_game();
 }
 
 void LauncherWindow::on_push_button_report_a_bug_clicked()
