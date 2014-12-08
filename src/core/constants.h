@@ -1,5 +1,4 @@
 #pragma once
-#include <QDebug> // Temporary for easy debugging.
 #include <QString>
 
 const QString VERSION = "1.0.3";
