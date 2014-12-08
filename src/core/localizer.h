@@ -6,8 +6,8 @@ const QString ERROR_OUT_OF_DATE_TEXT = "Your launcher appears to be out of date.
 const QString ERROR_NO_CONNECTION = "Couldn't connect to the account server.";
 const QString ERROR_INVALID_RESPONSE = "Received an invalid response from the account server.";
 const QString ERROR_WRITE = "Couldn't open file for write: %1";
-const QString ERROR_READ = "Couldn't open %1 for read.";
-const QString ERROR_DECOMPRESS = "Couldn't decompress archive: %1";
+const QString ERROR_READ = "Couldn't open file for read: %1";
+const QString ERROR_EXTRACT = "Couldn't extract archive: %1";
 
 const QString GUI_NO_VERSION = "N/A";
 const QString GUI_LOGIN_WAITING = "Verifying account credentials...";

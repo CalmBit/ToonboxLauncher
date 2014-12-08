@@ -14,5 +14,6 @@ const QString URL_DOWNLOAD_MIRROR = "http://download.toontowninfinite.com/test/w
 
 const int ERROR_CODE_NO_CONNECTION = 900;
 const int ERROR_CODE_INVALID_RESPONSE = 901;
-const int ERROR_CODE_DOWNLOADING = 902;
-const int ERROR_CODE_EXTRACTING = 903;
+const int ERROR_CODE_WRITE = 902;
+const int ERROR_CODE_READ = 903;
+const int ERROR_CODE_EXTRACT = 904;
