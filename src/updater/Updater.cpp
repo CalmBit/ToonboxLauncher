@@ -7,6 +7,9 @@
 
 #include <vector>
 #include <queue>
+#include <cstdio>
+
+#include <bzlib.h>
 
 #include <QUrl>
 #include <QObject>
@@ -23,6 +26,8 @@
 #include <QIODevice>
 #include <QtGlobal>
 #include <QCryptographicHash>
+#include <QFuture>
+#include <QtConcurrent>
 #include <QFileInfo>
 #include <QIODevice>
 
@@ -235,12 +240,26 @@ bool Updater::update()
     m_update_file_total = file_queue.size();
     for(m_update_file_number = 1; !file_queue.empty(); m_update_file_number++) {
         QString relative_path = file_queue.front();
-        QString archive_path = relative_path.section(".", 0, 0) + ".bz2";
+        QFileInfo file_info(relative_path);
+        QString archive_path = file_info.path() + "/" + file_info.completeBaseName() + ".bz2";
 
         try {
             this->download_file(archive_path);
         } catch(DownloadError &e) {
             emit download_error(e.get_error_code(), e.what());
+            return false;
+        }
+
+        try {
+            QFuture<void> future = QtConcurrent::run(
+                this, &Updater::extract_file, archive_path, relative_path);
+            QEventLoop event_loop;
+            QObject::connect(this, SIGNAL(extract_finished()),
+                             &event_loop, SLOT(quit()));
+            event_loop.exec();
+            future.waitForFinished();
+        } catch(DownloadThreadError &e) {
+            emit download_error(e.error().get_error_code(), e.error().what());
             return false;
         }
 
@@ -252,11 +271,6 @@ bool Updater::update()
 
 void Updater::download_file(const QString &relative_path)
 {
-    if(m_download_file) {
-        QString file_name = QFileInfo(relative_path).fileName();
-        throw DownloadError(ERROR_CODE_WRITE, ERROR_WRITE.arg(file_name));
-    }
-
     m_download_file = new QFile(relative_path);
     if(!m_download_file->open(QIODevice::WriteOnly)) {
         delete m_download_file;
@@ -353,4 +367,75 @@ void Updater::downloadProgress(qint64 bytes_read, qint64 bytes_total)
             QString::number(m_update_file_number),
             QString::number(m_update_file_total), QString::number(read),
             QString::number(total), unit, QString::number(speed), speed_unit));
+}
+
+void Updater::extract_file(const QString &archive_path, const QString &output_path)
+{
+    FILE *f = fopen(archive_path.toStdString().c_str(), "rb");
+    if(f == NULL) {
+        emit this->extract_finished();
+        try {
+            QString file_name = QFileInfo(archive_path).fileName();
+            throw DownloadError(ERROR_CODE_READ, ERROR_READ.arg(file_name));
+        } catch(DownloadError &e) {
+            throw DownloadThreadError(e);
+        }
+    }
+
+    int bzerror;
+    BZFILE *archive_file = BZ2_bzReadOpen(&bzerror, f, 0, 0, NULL, 0);
+    if(bzerror != BZ_OK) {
+        emit this->extract_finished();
+        try {
+            QString file_name = QFileInfo(archive_path).fileName();
+            throw DownloadError(ERROR_CODE_EXTRACT, ERROR_EXTRACT.arg(file_name));
+        } catch(DownloadError &e) {
+            throw DownloadThreadError(e);
+        }
+    }
+
+    FILE *output_file = fopen(output_path.toStdString().c_str(), "wb");
+    if(output_file == NULL) {
+        emit this->extract_finished();
+        try {
+            QString file_name = QFileInfo(output_path).fileName();
+            throw DownloadError(ERROR_CODE_WRITE, ERROR_WRITE.arg(file_name));
+        } catch(DownloadError &e) {
+            throw DownloadThreadError(e);
+        }
+    }
+
+    char buffer[4096];
+    while(bzerror == BZ_OK) {
+        int nread = BZ2_bzRead(&bzerror, archive_file, buffer, sizeof(buffer));
+        if((bzerror == BZ_OK) || bzerror == BZ_STREAM_END) {
+            size_t nwritten = fwrite(buffer, 1, nread, output_file);
+            if(nwritten != (size_t)nread) {
+                emit this->extract_finished();
+                try {
+                    QString file_name = QFileInfo(archive_path).fileName();
+                    throw DownloadError(ERROR_CODE_EXTRACT, ERROR_EXTRACT.arg(file_name));
+                } catch(DownloadError &e) {
+                    throw DownloadThreadError(e);
+                }
+            }
+        }
+    }
+
+    if(bzerror != BZ_STREAM_END) {
+        emit this->extract_finished();
+        try {
+            QString file_name = QFileInfo(archive_path).fileName();
+            throw DownloadError(ERROR_CODE_EXTRACT, ERROR_EXTRACT.arg(file_name));
+        } catch(DownloadError &e) {
+            throw DownloadThreadError(e);
+        }
+    }
+
+    BZ2_bzReadClose(&bzerror, archive_file);
+    fclose(f);
+    fclose(output_file);
+    QFile::remove(archive_path);
+
+    emit this->extract_finished();
 }

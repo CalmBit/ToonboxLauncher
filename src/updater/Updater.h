@@ -9,6 +9,7 @@
 #include <queue>
 #include <cstdint>
 
+#include <QtConcurrent>
 #include <QObject>
 #include <QUrl>
 #include <QString>
@@ -35,6 +36,32 @@ class DownloadError : public std::runtime_error
     int m_error_code;
 };
 
+class DownloadThreadError : public QtConcurrent::Exception
+{
+  public:
+    DownloadThreadError(DownloadError &error) : e(error)
+    {
+    }
+
+    void raise() const
+    {
+        throw *this;
+    }
+
+    DownloadThreadError *clone() const
+    {
+        return new DownloadThreadError(*this);
+    }
+
+    DownloadError error() const
+    {
+        return e;
+    }
+
+  private:
+    DownloadError e;
+};
+
 class Updater : public QObject
 {
     Q_OBJECT
@@ -56,6 +83,7 @@ class Updater : public QObject
   signals:
     void download_error(int error_code, const QString &error_string);
     void download_progress(qint64 bytes_read, qint64 bytes_total, const QString &status);
+    void extract_finished();
 
   private slots:
     void readyRead();
@@ -86,4 +114,5 @@ class Updater : public QObject
     ManifestFile parse_manifest_file(QXmlStreamReader &reader);
 
     void download_file(const QString &relative_path);
+    void extract_file(const QString &archive_path, const QString &output_path);
 };
