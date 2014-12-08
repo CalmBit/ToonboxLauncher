@@ -3,6 +3,7 @@
 #include "ManifestFile.h"
 
 #include "core/constants.h"
+#include "core/localizer.h"
 
 #include <vector>
 #include <queue>
@@ -22,11 +23,26 @@
 #include <QIODevice>
 #include <QtGlobal>
 #include <QCryptographicHash>
+#include <QFileInfo>
+#include <QIODevice>
 
 Updater::Updater(QUrl url) : QObject(), m_url(url), m_launcher_version(""),
     m_account_server(""), m_client_agent(""), m_server_version(""), m_update_file_number(0),
     m_update_file_total(0)
 {
+}
+
+Updater::~Updater()
+{
+    if(m_download_reply) {
+        delete m_download_reply;
+        m_download_reply = nullptr;
+    }
+    if(m_download_file) {
+        m_download_file->close();
+        delete m_download_file;
+        m_download_file = nullptr;
+    }
 }
 
 QString Updater::get_launcher_version()
@@ -236,5 +252,105 @@ bool Updater::update()
 
 void Updater::download_file(const QString &relative_path)
 {
-    throw DownloadError(100, "Not implemented.");
+    if(m_download_file) {
+        QString file_name = QFileInfo(relative_path).fileName();
+        throw DownloadError(ERROR_CODE_WRITE, ERROR_WRITE.arg(file_name));
+    }
+
+    m_download_file = new QFile(relative_path);
+    if(!m_download_file->open(QIODevice::WriteOnly)) {
+        delete m_download_file;
+        m_download_file = nullptr;
+
+        QString file_name = QFileInfo(relative_path).fileName();
+        throw DownloadError(ERROR_CODE_WRITE, ERROR_WRITE.arg(file_name));
+    }
+
+    QNetworkRequest request(QUrl(m_url.toString() + relative_path));
+    request.setHeader(QNetworkRequest::UserAgentHeader, USER_AGENT);
+    QNetworkAccessManager access_manager;
+    m_download_reply = access_manager.get(request);
+
+    m_download_time.start();
+
+    QObject::connect(m_download_reply, SIGNAL(readyRead()),
+                     this, SLOT(readyRead()));
+    QObject::connect(m_download_reply, SIGNAL(finished()),
+                     this, SLOT(finished()));
+    QObject::connect(m_download_reply, SIGNAL(downloadProgress(qint64, qint64)),
+                     this, SLOT(downloadProgress(qint64, qint64)));
+
+    // Block until the network request is finished:
+    QEventLoop event_loop;
+    QObject::connect(m_download_reply, SIGNAL(finished()),
+                     &event_loop, SLOT(quit()));
+    event_loop.exec();
+
+    if(m_download_reply) {
+        delete m_download_reply;
+        m_download_reply = nullptr;
+    }
+}
+
+void Updater::readyRead()
+{
+    if(m_download_file && m_download_reply) {
+        m_download_file->write(m_download_reply->readAll());
+    }
+}
+
+void Updater::finished()
+{
+    if(m_download_file) {
+        m_download_file->close();
+        delete m_download_file;
+        m_download_file = nullptr;
+    }
+}
+
+void Updater::downloadProgress(qint64 bytes_read, qint64 bytes_total)
+{
+    // Choose the unit:
+    QString unit = "B";
+    double read = bytes_read;
+    double total = bytes_total;
+    if(bytes_total >= 1024) {
+        if(bytes_total < (1024*1024)) {
+            read /= 1024;
+            total /= 1024;
+            unit = "kB";
+        } else {
+            read /= 1024 * 1024;
+            total /= 1024 * 1024;
+            unit = "MB";
+        }
+    }
+
+    // Round the values to the nearest tenth:
+    read = floor((read*10.0) + 0.5) / 10.0;
+    total = floor((total*10.0) + 0.5) / 10.0;
+
+    // Calculate the download speed:
+    double speed = (bytes_read*1000.0) / m_download_time.elapsed();
+
+    // Choose the speed unit:
+    QString speed_unit = "B/s";
+    if(speed >= 1024) {
+        if(speed < (1024*1024)) {
+            speed /= 1024;
+            speed_unit = "kB/s";
+        } else {
+            speed /= 1024 * 1024;
+            speed_unit = "MB/s";
+        }
+    }
+
+    // Round the value to the nearest tenth:
+    speed = floor((speed*10.0) + 0.5) / 10.0;
+
+    emit this->download_progress(bytes_read, bytes_total,
+        GUI_DOWNLOAD_WAITING.arg(
+            QString::number(m_update_file_number),
+            QString::number(m_update_file_total), QString::number(read),
+            QString::number(total), unit, QString::number(speed), speed_unit));
 }

@@ -87,6 +87,8 @@ bool LauncherWindow::update_game() {
     // Connect the required slots:
     QObject::connect(m_updater, SIGNAL(download_error(int, const QString &)),
                      this, SLOT(download_error(int, const QString &)));
+    QObject::connect(m_updater, SIGNAL(download_progress(qint64, qint64, const QString &)),
+                     this, SLOT(download_progress(qint64, qint64, const QString &)));
 
     // Begin downloading the updated files:
     return m_updater->update();
@@ -202,4 +204,12 @@ void LauncherWindow::on_line_edit_password_returnPressed()
 void LauncherWindow::download_error(int error_code, const QString &error_string)
 {
     m_ui->label_status->setText(QString::number(error_code) + ": " + error_string);
+}
+
+void LauncherWindow::download_progress(qint64 bytes_read, qint64 bytes_total,
+                                       const QString &status)
+{
+    m_ui->label_status->setText(status);
+    m_ui->progress_bar->setMaximum(bytes_total);
+    m_ui->progress_bar->setValue(bytes_read);
 }

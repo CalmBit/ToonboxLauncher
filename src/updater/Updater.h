@@ -12,6 +12,9 @@
 #include <QObject>
 #include <QUrl>
 #include <QString>
+#include <QFile>
+#include <QNetworkReply>
+#include <QTime>
 #include <QByteArray>
 #include <QXmlStreamReader>
 
@@ -38,6 +41,7 @@ class Updater : public QObject
 
   public:
     Updater(QUrl url);
+    ~Updater();
 
     QString get_launcher_version();
     QString get_account_server();
@@ -51,6 +55,12 @@ class Updater : public QObject
 
   signals:
     void download_error(int error_code, const QString &error_string);
+    void download_progress(qint64 bytes_read, qint64 bytes_total, const QString &status);
+
+  private slots:
+    void readyRead();
+    void finished();
+    void downloadProgress(qint64 bytes_read, qint64 bytes_total);
 
   private:
     QUrl m_url;
@@ -64,6 +74,10 @@ class Updater : public QObject
 
     size_t m_update_file_number;
     size_t m_update_file_total;
+
+    QFile *m_download_file;
+    QNetworkReply *m_download_reply;
+    QTime m_download_time;
 
     void add_directory(ManifestDirectory directory);
 

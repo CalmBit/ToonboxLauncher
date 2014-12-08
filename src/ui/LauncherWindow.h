@@ -34,6 +34,7 @@ class LauncherWindow : public DraggableWindow
     void on_line_edit_password_returnPressed();
 
     void download_error(int error_code, const QString &error_string);
+    void download_progress(qint64 bytes_read, qint64 bytes_total, const QString &status);
 
   private:
     Ui::Launcher *m_ui;
