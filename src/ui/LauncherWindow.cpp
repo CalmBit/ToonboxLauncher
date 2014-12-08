@@ -168,8 +168,19 @@ void LauncherWindow::on_push_button_play_clicked()
 
     // Alright, the login was a success. Begin the update process:
     if(!this->update_game()) {
+        // Re-enable the launcher's login, and content packs functionality:
+        m_ui->push_button_play->setEnabled(true);
+        m_ui->line_edit_username->setEnabled(true);
+        m_ui->line_edit_password->setEnabled(true);
+        // TODO: Re-enable the content packs button.
+
+        // For ease of logging in, put focus on the username line edit:
+        m_ui->line_edit_username->setFocus();
+
         return;
     }
+
+    this->launch_game(login_reply.data);
 }
 
 void LauncherWindow::on_push_button_report_a_bug_clicked()
