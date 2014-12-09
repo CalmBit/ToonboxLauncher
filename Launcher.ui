@@ -43,14 +43,16 @@
    <iconset resource="app.qrc">
     <normaloff>:/ICON/assets/ICON.ico</normaloff>:/ICON/assets/ICON.ico</iconset>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-image: url(:/JPEG/assets/BACKGROUND.jpg);
-border-radius: 25px;</string>
-  </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
   </property>
-  <widget class="QWidget" name="centralWidget">
+  <widget class="QWidget" name="launcher_window">
+   <property name="styleSheet">
+    <string notr="true">QWidget#launcher_window {
+    background-image: url(:/JPEG/assets/BACKGROUND.jpg);
+    border-radius: 25px;
+}</string>
+   </property>
    <widget class="QPushButton" name="push_button_close">
     <property name="geometry">
      <rect>
