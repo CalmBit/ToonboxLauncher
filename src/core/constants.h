@@ -1,9 +1,9 @@
 #pragma once
 #include <QString>
 
-const QString VERSION = "1.0.3";
+const QString VERSION = "1.1.0";
 const QString DISTRIBUTION = "test";
-const QString USER_AGENT = "TTI-Launcher/1.0.3 (test/win32)";
+const QString USER_AGENT = "TTI-Launcher/1.1.0 (test/win32)";
 const QString MANIFEST_FILENAME = "patcher.xml";
 
 const QString URL_REPORT_A_BUG = "https://launchpad.net/toontowninfinite";
