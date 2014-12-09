@@ -25,6 +25,8 @@ HEADERS += \
     src/updater/ManifestDirectory.h \
     src/updater/Updater.h
 
+win32:RC_ICONS += assets/ICON.ico
+
 FORMS += Launcher.ui
 
 RESOURCES += app.qrc
